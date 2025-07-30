@@ -18,14 +18,10 @@ class NationCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    let flagLabel: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 16, weight: .medium)
-        label.textAlignment = .center
-        label.textColor = .black
-        label.backgroundColor = .white
-        label.translatesAutoresizingMaskIntoConstraints = false
-        return label
+    let flagLabel: UIImageView = {
+        let image = UIImageView()
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
     }()
     
     override init(frame: CGRect) {
