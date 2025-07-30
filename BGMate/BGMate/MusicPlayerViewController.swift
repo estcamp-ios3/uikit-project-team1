@@ -18,9 +18,16 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
 
     // 고정된 mp3 파일 목록 (파일명, 표시 텍스트, 아티스트)
     let musicList: [(fileName: String, displayName: String, artist: String)] = [
-        ("DLJ - Answer", "DLJ - Answer", "DLJ"),
+        ("DLJ - Answer", "answer", "DLJ"),
+        ("Float", "Float", "Mr.Goldenfold"),
+        ("Dear Katara", "Dear Katara", "L.Dre"),
+        ("watermelt - summer", "summer", "watermelt"),
+        ("Fashion by Alex Productions", "Fashion", "Alex Productions"),
+        ("Chill Noons", "Chill Noons", "Kronicle"),
+        ("Chimes  Jeff Kaale", "Chimes", "Jeff Kaale"),
+        ("burbank - sorry i like you", "sorry i like you", "burbank"),
         ("JapaneseMoodSong", "일본풍 음악", "Yamato"),
-        ("ChineseMoodSong", "중국풍 음악", "Li Wei")
+        ("ChineseMoodSong", "중국풍 음악", "Li Wei"),
     ]
 
     // MARK: - UI 구성 요소
@@ -69,7 +76,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         playAllButton.backgroundColor = UIColor.systemBlue
         playAllButton.setTitleColor(.white, for: .normal)
         playAllButton.layer.cornerRadius = 8
-        playAllButton.addTarget(self, action: #selector(showPlayer), for: .touchUpInside)
+        playAllButton.addTarget(self, action: #selector(playAllMusic), for: .touchUpInside)
         playAllButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         view.addSubview(playAllButton)
         
@@ -92,16 +99,13 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
             titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30),
             addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
-            addTrackButton.widthAnchor.constraint(equalToConstant: 95),
             addTrackButton.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            addTrackButton.widthAnchor.constraint(equalToConstant: 100),
+            addTrackButton.widthAnchor.constraint(equalToConstant: 95),
             addTrackButton.heightAnchor.constraint(equalToConstant: 44),
 
             playAllButton.centerYAnchor.constraint(equalTo: addTrackButton.centerYAnchor),
             playAllButton.leadingAnchor.constraint(equalTo: addTrackButton.trailingAnchor, constant: 12),
-            playAllButton.widthAnchor.constraint(equalToConstant: 120),
             playAllButton.widthAnchor.constraint(equalToConstant: 120),
             playAllButton.heightAnchor.constraint(equalToConstant: 44),
 
@@ -120,15 +124,6 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         playerVC.currentIndex = 0
         playerVC.modalPresentationStyle = .fullScreen
         present(playerVC, animated: true, completion: nil)
-
-    }
-
-    @objc private func showPlayer() {
-        let playerVC = PlayerViewController()
-        playerVC.modalPresentationStyle = .fullScreen   // 여기서 풀스크린 모달
-        present(playerVC, animated: true, completion: nil)
-        playAllMusic()
-        
     }
 //    // MARK: - 특정 인덱스 음악 재생
 //    func playMusic(at index: Int) {
