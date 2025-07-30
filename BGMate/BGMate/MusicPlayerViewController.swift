@@ -60,6 +60,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         addTrackButton.backgroundColor = UIColor.systemGray
         addTrackButton.layer.cornerRadius = 8
         addTrackButton.isEnabled = false // 기능 제거
+        addTrackButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         view.addSubview(addTrackButton)
 
         // ▶ 전체 재생 버튼
@@ -69,11 +70,9 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         playAllButton.setTitleColor(.white, for: .normal)
         playAllButton.layer.cornerRadius = 8
         playAllButton.addTarget(self, action: #selector(showPlayer), for: .touchUpInside)
+        playAllButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         view.addSubview(playAllButton)
         
-        
-        
-
         // 테이블뷰 (곡 리스트)
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
@@ -84,22 +83,25 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         // 오토레이아웃
         NSLayoutConstraint.activate([
             
-            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
-            titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 16),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            
             imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
             imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             imageView.widthAnchor.constraint(equalToConstant: 120),
             imageView.heightAnchor.constraint(equalToConstant: 120),
-
-            addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
+            
+            titleLabel.topAnchor.constraint(equalTo: imageView.topAnchor, constant: 15),
+            titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30),
+            addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
+            addTrackButton.widthAnchor.constraint(equalToConstant: 95),
             addTrackButton.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             addTrackButton.widthAnchor.constraint(equalToConstant: 100),
             addTrackButton.heightAnchor.constraint(equalToConstant: 44),
 
             playAllButton.centerYAnchor.constraint(equalTo: addTrackButton.centerYAnchor),
             playAllButton.leadingAnchor.constraint(equalTo: addTrackButton.trailingAnchor, constant: 12),
+            playAllButton.widthAnchor.constraint(equalToConstant: 120),
             playAllButton.widthAnchor.constraint(equalToConstant: 120),
             playAllButton.heightAnchor.constraint(equalToConstant: 44),
 
