@@ -92,7 +92,7 @@ extension HomeViewController: UICollectionViewDataSource {
             self.present(CreatePlaylistViewController(), animated: true, completion: nil)
             
         } else {
-            navigationController?.pushViewController(CreatePlaylistViewController(), animated: true)
+            navigationController?.pushViewController(MusicPlayerViewController(), animated: true)
         }
     }
 }
