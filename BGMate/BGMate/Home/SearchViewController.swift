@@ -2,7 +2,7 @@
 //  SearchViewController.swift
 //  UIKitPrototype
 //
-//  Created by 권태우 on 7/23/25.
+//  Created by 권태우 on 7/30/25.
 //
 
 import UIKit
@@ -32,7 +32,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .systemBackground
+        self.view.backgroundColor = .systemBackground
+        self.title = "SEARCH"
         
         setupSearchBar()
         setupTableView()
@@ -42,7 +43,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     private func setupSearchBar() {
-        searchBar.placeholder = "검색"
+        searchBar.placeholder = "Type to search..."
         searchBar.delegate = self
         
         searchBar.translatesAutoresizingMaskIntoConstraints = false
@@ -80,9 +81,9 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
         let text = filteredResults[indexPath.row]
         cell.textLabel?.text = text
-        cell.detailTextLabel?.text = "팀 이름 예시"
+        cell.detailTextLabel?.text = "Artist"
         
-        cell.imageView?.image = UIImage(named: "pohangSteelers")
+//        cell.imageView?.image = UIImage(named: "pohangSteelers")
         return cell
     }
     
