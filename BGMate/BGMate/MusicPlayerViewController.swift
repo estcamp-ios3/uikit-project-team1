@@ -1,0 +1,187 @@
+//
+//  MusicPlayerViewController.swift
+//  BGMate
+//
+//  Created by MacBook Pro on 7/30/25.
+//
+
+import UIKit
+import AVFoundation
+
+class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, AVAudioPlayerDelegate {
+    
+    
+    
+    // MARK: - 음악 플레이어 관련 변수
+    var player: AVAudioPlayer?
+    var nowPlayingIndex: Int? = nil
+
+    // 고정된 mp3 파일 목록 (파일명, 표시 텍스트, 아티스트)
+    let musicList: [(fileName: String, displayName: String, artist: String)] = [
+        ("DLJ - Answer", "DLJ - Answer", "DLJ"),
+        ("JapaneseMoodSong", "일본풍 음악", "Yamato"),
+        ("ChineseMoodSong", "중국풍 음악", "Li Wei")
+    ]
+
+    // MARK: - UI 구성 요소
+    let imageView = UIImageView()
+    let titleLabel = UILabel()
+    let addTrackButton = UIButton(type: .system)
+    let playAllButton = UIButton(type: .system)
+    let tableView = UITableView()
+
+    // MARK: - 생명 주기
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        view.backgroundColor = .white
+        setupUI()
+    }
+
+    // MARK: - UI 구성
+    func setupUI() {
+        // 앨범 이미지
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.image = UIImage(named: "japanese") // 프로젝트에 있는 이미지 이름으로 변경
+        imageView.contentMode = .scaleAspectFill
+        imageView.layer.cornerRadius = 8
+        imageView.clipsToBounds = true
+        view.addSubview(imageView)
+
+        // 제목
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
+        titleLabel.text = "오후 일식"
+        titleLabel.font = .systemFont(ofSize: 40, weight: .semibold)
+        view.addSubview(titleLabel)
+
+        // + 곡추가 (기능 없음 - 비활성)
+        addTrackButton.translatesAutoresizingMaskIntoConstraints = false
+        addTrackButton.setTitle("+ 곡추가", for: .normal)
+        addTrackButton.setTitleColor(.white, for: .normal)
+        addTrackButton.backgroundColor = UIColor.systemGray
+        addTrackButton.layer.cornerRadius = 8
+        addTrackButton.isEnabled = false // 기능 제거
+        view.addSubview(addTrackButton)
+
+        // ▶ 전체 재생 버튼
+        playAllButton.translatesAutoresizingMaskIntoConstraints = false
+        playAllButton.setTitle("▶ 전체 재생", for: .normal)
+        playAllButton.backgroundColor = UIColor.systemBlue
+        playAllButton.setTitleColor(.white, for: .normal)
+        playAllButton.layer.cornerRadius = 8
+        playAllButton.addTarget(self, action: #selector(showPlayer), for: .touchUpInside)
+        view.addSubview(playAllButton)
+        
+        
+        
+
+        // 테이블뷰 (곡 리스트)
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "MusicCell")
+        view.addSubview(tableView)
+
+        // 오토레이아웃
+        NSLayoutConstraint.activate([
+            
+            titleLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 30),
+            titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 16),
+            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            
+            imageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 16),
+            imageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            imageView.widthAnchor.constraint(equalToConstant: 120),
+            imageView.heightAnchor.constraint(equalToConstant: 120),
+
+            addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 10),
+            addTrackButton.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            addTrackButton.widthAnchor.constraint(equalToConstant: 100),
+            addTrackButton.heightAnchor.constraint(equalToConstant: 44),
+
+            playAllButton.centerYAnchor.constraint(equalTo: addTrackButton.centerYAnchor),
+            playAllButton.leadingAnchor.constraint(equalTo: addTrackButton.trailingAnchor, constant: 12),
+            playAllButton.widthAnchor.constraint(equalToConstant: 120),
+            playAllButton.heightAnchor.constraint(equalToConstant: 44),
+
+            tableView.topAnchor.constraint(equalTo: addTrackButton.bottomAnchor, constant: 15),
+            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
+            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+    }
+
+    // MARK: - 전체 재생 (순차 재생)
+    @objc func playAllMusic() {
+        // PlayerViewController를 모달로 띄우고, 음악 리스트와 첫 곡 정보를 전달
+        let playerVC = PlayerViewController()
+        playerVC.musicList = musicList
+        playerVC.currentIndex = 0
+        playerVC.modalPresentationStyle = .fullScreen
+        present(playerVC, animated: true, completion: nil)
+
+    }
+
+    @objc private func showPlayer() {
+        let playerVC = PlayerViewController()
+        playerVC.modalPresentationStyle = .fullScreen   // 여기서 풀스크린 모달
+        present(playerVC, animated: true, completion: nil)
+        playAllMusic()
+        
+    }
+//    // MARK: - 특정 인덱스 음악 재생
+//    func playMusic(at index: Int) {
+//        guard index < musicList.count else { return }
+//
+//        let fileName = musicList[index].fileName
+//        guard let url = Bundle.main.url(forResource: fileName, withExtension: "mp3") else {
+//            print("파일 없음: \(fileName).mp3")
+//            return
+//        }
+//
+//        do {
+//            player = try AVAudioPlayer(contentsOf: url)
+//            player?.delegate = self
+//            player?.play()
+//            nowPlayingIndex = index
+//        } catch {
+//            print("오디오 재생 오류: \(error)")
+//        }
+//    }
+
+    // MARK: - AVAudioPlayerDelegate → 재생이 끝나면 다음 곡 자동 재생
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        guard let currentIndex = nowPlayingIndex else { return }
+        let nextIndex = currentIndex + 1
+        if nextIndex < musicList.count {
+          //  playMusic(at: nextIndex)
+        }
+    }
+
+    // MARK: - 테이블뷰 DataSource
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return musicList.count
+    }
+
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "MusicCell", for: indexPath)
+        cell.textLabel?.text = musicList[indexPath.row].displayName
+        return cell
+    }
+
+    // MARK: - 테이블뷰 Delegate
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // 아무 동작도 하지 않음 (개별 곡 선택 시 재생 제거)
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
+
+func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    // 아무것도 안 함!
+    tableView.deselectRow(at: indexPath, animated: true)
+}
+
+
+
+#Preview {
+    MusicPlayerViewController()
+}
