@@ -46,8 +46,8 @@ class HomeViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
-            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
+            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 40),
+            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -40),
             collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
@@ -63,11 +63,7 @@ class HomeViewController: UIViewController {
 
 extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 9
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
-        return UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)
+        return playlists.count + 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -75,7 +71,7 @@ extension HomeViewController: UICollectionViewDataSource {
             // 첫 번째 셀
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             
-            cell.flagLabel.text = "+"
+//            cell.flagLabel.text = "+"
             cell.nameLabel.text = "ADD"
             
             return cell
@@ -83,8 +79,8 @@ extension HomeViewController: UICollectionViewDataSource {
             // cell의 재활용
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             
-            cell.flagLabel.text = "Space for image"
-            cell.nameLabel.text = "PLAYLIST"
+            cell.flagLabel.image = UIImage(systemName: playlists[indexPath.item - 1].coverImageName ?? "")
+            cell.nameLabel.text = playlists[indexPath.item - 1].title
             
             return cell
         }
