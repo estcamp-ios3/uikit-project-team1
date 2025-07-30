@@ -2,7 +2,7 @@
 //  HomeViewController.swift
 //  BGMate
 //
-//  Created by catharina J on 7/29/25.
+//  Created by 권태우 on 7/30/25.
 //
 
 import UIKit
@@ -38,7 +38,7 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
         
         self.view.backgroundColor = .systemBackground
-                
+        
         self.view.addSubview(collectionView)
         
         collectionView.translatesAutoresizingMaskIntoConstraints = false
@@ -54,7 +54,6 @@ class HomeViewController: UIViewController {
         collectionView.dataSource = self
         collectionView.delegate = self
         
-        // 커스텀 셀 만들어 활용
         collectionView.register(NationCell.self, forCellWithReuseIdentifier: "NationCell")
     }
 }
@@ -71,16 +70,32 @@ extension HomeViewController: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        // cell의 재활용
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
-        
-        cell.flagLabel.text = "가나다"
-        cell.nameLabel.text = "ABC"
-        
-        return cell
+        if indexPath.item == 0 {
+            // 첫 번째 셀
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as! FirstCell
+            // 커스텀 설정
+            cell.configure() // 예시
+            return cell
+        } else {
+            // cell의 재활용
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
+            
+            cell.flagLabel.text = "가나다"
+            cell.nameLabel.text = "ABC"
+            
+            return cell
+        }
     }
     
-    
+    // 셀 선택 시 호출
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if indexPath.item == 0 {
+            navigationController?.pushViewController(CreatePlaylistViewController(), animated: true)
+            
+        } else {
+            navigationController?.pushViewController(CreatePlaylistViewController(), animated: true)
+        }
+    }
 }
 
 extension HomeViewController: UICollectionViewDelegate {
