@@ -38,6 +38,7 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
         
         self.view.backgroundColor = .systemBackground
+        self.title = "Home"
         
         self.view.addSubview(collectionView)
         
@@ -72,16 +73,18 @@ extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.item == 0 {
             // 첫 번째 셀
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "FirstCell", for: indexPath) as! FirstCell
-            // 커스텀 설정
-            cell.configure() // 예시
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
+            
+            cell.flagLabel.text = "가나다"
+            cell.nameLabel.text = "ABC"
+            
             return cell
         } else {
             // cell의 재활용
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             
-            cell.flagLabel.text = "가나다"
-            cell.nameLabel.text = "ABC"
+            cell.flagLabel.text = "라마바"
+            cell.nameLabel.text = "DEF"
             
             return cell
         }
@@ -90,7 +93,7 @@ extension HomeViewController: UICollectionViewDataSource {
     // 셀 선택 시 호출
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if indexPath.item == 0 {
-            navigationController?.pushViewController(CreatePlaylistViewController(), animated: true)
+            self.present(CreatePlaylistViewController(), animated: true, completion: nil)
             
         } else {
             navigationController?.pushViewController(CreatePlaylistViewController(), animated: true)
