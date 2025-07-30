@@ -20,6 +20,9 @@ class NationCell: UICollectionViewCell {
     }()
     let flagLabel: UIImageView = {
         let image = UIImageView()
+        image.image = UIImage(systemName: "")
+        image.contentMode = .scaleAspectFit
+        image.frame = CGRect(x: 0, y: 0, width: 75, height: 75)
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
