@@ -38,7 +38,7 @@ class HomeViewController: UIViewController {
         super.viewDidLoad()
         
         self.view.backgroundColor = .systemBackground
-        self.title = "Home"
+        self.title = "BGMate"
         
         self.view.addSubview(collectionView)
         
@@ -75,16 +75,16 @@ extension HomeViewController: UICollectionViewDataSource {
             // 첫 번째 셀
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             
-            cell.flagLabel.text = "가나다"
-            cell.nameLabel.text = "ABC"
+            cell.flagLabel.text = "+"
+            cell.nameLabel.text = "ADD"
             
             return cell
         } else {
             // cell의 재활용
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             
-            cell.flagLabel.text = "라마바"
-            cell.nameLabel.text = "DEF"
+            cell.flagLabel.text = "Space for image"
+            cell.nameLabel.text = "PLAYLIST"
             
             return cell
         }
