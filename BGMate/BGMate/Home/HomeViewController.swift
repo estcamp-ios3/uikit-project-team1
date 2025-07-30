@@ -20,7 +20,7 @@ class HomeViewController: UIViewController {
         // Cell의 크기와 간격 정하기
         layout.itemSize = CGSize(width: 150, height: 150)
         layout.minimumLineSpacing = 20 // 줄간격
-        layout.minimumInteritemSpacing = 20 // 셀간격
+        layout.minimumInteritemSpacing = 5 // 셀간격
         
         // 위치는 AuroLayout으로 관한다.
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -46,8 +46,8 @@ class HomeViewController: UIViewController {
         
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 20),
+            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -20),
             collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
         ])
         
