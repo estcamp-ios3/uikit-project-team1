@@ -22,16 +22,16 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //
 //        let tabTwoNav = UINavigationController(rootViewController: TabTwoViewController())  // 전체 리스트
 //        tabTwoNav.tabBarItem = UITabBarItem(title: "Tab02", image: UIImage(systemName: "map.fill"), tag: 1)
-//      
-//        let tabThreeNav = UINavigationController(rootViewController: TabThreeViewController())  // 검색
-//        tabThreeNav.tabBarItem = UITabBarItem(title: "Tab03", image: UIImage(systemName: "headphones.circle"), tag: 2)
+      
+        let tabThreeNav = UINavigationController(rootViewController: SearchViewController())  // 검색
+        tabThreeNav.tabBarItem = UITabBarItem(title: "Search", image: UIImage(systemName: "headphones.circle"), tag: 2)
 //
 //        let tabFourNav = UINavigationController(rootViewController: CreatePlaylistViewController())  //프로필
 //        tabFourNav.tabBarItem = UITabBarItem(title: "Tab04", image: UIImage(systemName: "map"), tag: 3)
 
         let tabBarController = UITabBarController()
 //        tabBarController.viewControllers = [tabOneNav, tabTwoNav, tabThreeNav, tabFourNav]
-        tabBarController.viewControllers = [tabOneNav]
+        tabBarController.viewControllers = [tabOneNav, tabThreeNav]
         
         window.rootViewController = tabBarController
         
