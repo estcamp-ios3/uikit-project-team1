@@ -7,11 +7,10 @@
 
 import UIKit
 
-class HomeViewController: UIViewController, UICollectionViewDelegate {
+class HomeViewController: UIViewController {
     
     let collectionView: UICollectionView
     
-    let nationsStore = NationsStore()
     
     // UIViewController의 init은 다음과 같이 override 해야합니다.
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -19,9 +18,9 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         let layout = UICollectionViewFlowLayout()
         
         // Cell의 크기와 간격 정하기
-        layout.itemSize = CGSize(width: 70, height: 70)
-        layout.minimumLineSpacing = 5 // 줄간격
-        layout.minimumInteritemSpacing = 5 // 셀간격
+        layout.itemSize = CGSize(width: 150, height: 150)
+        layout.minimumLineSpacing = 20 // 줄간격
+        layout.minimumInteritemSpacing = 20 // 셀간격
         
         // 위치는 AuroLayout으로 관한다.
         collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
@@ -40,10 +39,7 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
         
         self.view.backgroundColor = .systemBackground
         
-        self.title = "Nations Collection"
-        
-        
-        collectionView.backgroundColor = .lightGray
+        collectionView.backgroundColor = .systemBackground
         
         self.view.addSubview(collectionView)
         
@@ -69,15 +65,15 @@ class HomeViewController: UIViewController, UICollectionViewDelegate {
 
 extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return nationsStore.nations.count
+        return 9
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         // cell의 재활용
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
         
-        cell.flagLabel.text = nationsStore.nations[indexPath.row].flag
-        cell.nameLabel.text = nationsStore.nations[indexPath.row].name
+        cell.flagLabel.text = "가나다"
+        cell.nameLabel.text = "ABC"
         
         return cell
     }
@@ -85,6 +81,6 @@ extension HomeViewController: UICollectionViewDataSource {
     
 }
 
-extension NationCollectionViewController: UICollectionViewDelegate {
+extension HomeViewController: UICollectionViewDelegate {
     
 }
