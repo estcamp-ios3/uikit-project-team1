@@ -12,23 +12,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     let searchBar = UISearchBar()
     let tableView = UITableView()
     
-    let results: [String] = [
-        "포항은 영원히 강하다",
-        "영일만 친구들",
-        "대구 FC",
-        "전북 현대",
-        "울산 현대",
-        "광주 FC",
-        "기 동 종 신",
-        "제주 SK",
-        "대전 하나",
-        "김천 상무",
-        "수원 FC",
-        "강원 FC",
-        "안양 FC",
-    ]
-    
-    var filteredResults: [String] = []
+    let results = categoryList
+    var filteredResults: [Category] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -79,11 +64,11 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
-        let text = filteredResults[indexPath.row]
+        let text = filteredResults[indexPath.row].title
         cell.textLabel?.text = text
         cell.detailTextLabel?.text = "Artist"
         
-//        cell.imageView?.image = UIImage(named: "pohangSteelers")
+        cell.imageView?.image = UIImage(named: filteredResults[indexPath.row].coverImageName ?? "")
         return cell
     }
     
@@ -93,7 +78,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if searchText.isEmpty {
             filteredResults.removeAll()
         } else {
-            filteredResults = results.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            filteredResults = categoryList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
         }
         tableView.reloadData()
     }
