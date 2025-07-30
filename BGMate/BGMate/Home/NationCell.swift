@@ -32,6 +32,7 @@ class NationCell: UICollectionViewCell {
         
         super.init(frame: frame)
         
+        self.backgroundColor = .red
         self.contentView.addSubview(flagLabel)
         self.contentView.addSubview(nameLabel)
         
