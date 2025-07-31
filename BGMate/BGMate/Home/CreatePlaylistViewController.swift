@@ -145,7 +145,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         ])
         
         closeButton.addAction(UIAction { [weak self] _ in self?.didTapClose() }, for: .touchUpInside)
-        createButton.addAction(UIAction { [weak self] _ in self?.didTapClose() }, for: .touchUpInside)
+        createButton.addAction(UIAction { [weak self] _ in self?.didTapCreate() }, for: .touchUpInside)
     }
     
     //MARK: - close
@@ -194,7 +194,39 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     
     // 아이템 선택 시 동작
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedTags = tagList[indexPath.item]
-        print("Selected Tags: \(selectedTags.title)")
+        let selectedTag = tagList[indexPath.item]
+        selectedCategories.append(selectedTag)
+        print("Selected Tags: \(selectedTag.title)")
+    }
+    
+    // 아이템 선택 해제시 동작
+    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
+       
+        let deselectedTag = tagList[indexPath.item]
+        selectedCategories.removeAll { $0.id == deselectedTag.id }
+        print("해제된 태그: \(deselectedTag.tags)")
+    }
+    
+    private func didTapCreate() {
+        let selectedTagStrings = selectedCategories.map { $0.tags }
+        
+        // 태그가 하나라도 겹치는 곡들만 필터링
+        let filteredSongs = songs.filter { song in
+            !Set(song.tags).isDisjoint(with: selectedTagStrings)
+        }
+        
+        // 플레이리스트 제목 및 커버 설정
+        let title = nameTextField.text ?? "이름 없는 플레이리스트"
+        let coverImageName = selectedCategories.first?.coverImageName // 첫번째 선택 태그 기준
+
+        let newPlaylist = Playlist(title: title, coverImageName: coverImageName, playlist: filteredSongs)
+        
+        // 전역 변수에 추가
+        playlists.append(newPlaylist)
+        print("\n새로 생성된 플레이리스트: \n\(playlists)")
+        
+        NotificationCenter.default.post(name: .playlistCreated, object: nil)
+        // 홈으로 돌아가기
+        dismiss(animated: true)
     }
 }
