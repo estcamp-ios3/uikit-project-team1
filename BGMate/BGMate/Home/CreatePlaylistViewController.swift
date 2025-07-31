@@ -8,7 +8,7 @@
 import UIKit
 
 class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
-    private var selectedCategories: [Category] = []
+    private var selectedCategories: [Tags] = []
     
     private let closeButton: UIButton = {
         let config = UIButton.Configuration.plain() // 기본 스타일
@@ -166,7 +166,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.delegate = self
         collectionView.dataSource = self
-        collectionView.register(CategoryCell.self, forCellWithReuseIdentifier: CategoryCell.identifier)
+        collectionView.register(TagsCell.self, forCellWithReuseIdentifier: TagsCell.identifier)
         collectionView.backgroundColor = .clear
         collectionView.allowsMultipleSelection = true
         
@@ -180,21 +180,21 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     }
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return categoryList.count // Category.swift 파일의 categoryList 사용
+        return tagList.count // Tags.swift 파일의 tagList 사용
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CategoryCell.identifier, for: indexPath) as? CategoryCell else {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TagsCell.identifier, for: indexPath) as? TagsCell else {
             return UICollectionViewCell()
         }
-        let category = categoryList[indexPath.item]
-        cell.configure(with: category) // 셀 구성
+        let tagsCell = tagList[indexPath.item]
+        cell.configure(with: tagsCell) // 셀 구성
         return cell
     }
     
     // 아이템 선택 시 동작
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedCategory = categoryList[indexPath.item]
-        print("Selected category: \(selectedCategory.title)")
+        let selectedTags = tagList[indexPath.item]
+        print("Selected Tags: \(selectedTags.title)")
     }
 }

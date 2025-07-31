@@ -12,8 +12,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     let searchBar = UISearchBar()
     let tableView = UITableView()
     
-    let results = categoryList
-    var filteredResults: [Category] = []
+    let results = tagList
+    var filteredResults: [Tags] = []
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -78,7 +78,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         if searchText.isEmpty {
             filteredResults.removeAll()
         } else {
-            filteredResults = categoryList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+            filteredResults = tagList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
         }
         tableView.reloadData()
     }
