@@ -10,7 +10,7 @@ import UIKit
 class PlayerViewController: UIViewController {
     
     // 외부에서 받을 음악 리스트와 현재 인덱스
-    var musicList: [(fileName: String, displayName: String, artist: String)] = []
+    var musicList: Playlist!
     var currentIndex: Int = 0
     
     // 셔플, 반복 상태
@@ -163,7 +163,7 @@ class PlayerViewController: UIViewController {
         setupNotifications()
         
         // musicList와 currentIndex가 세팅되어 있으면 해당 곡 재생
-        if !musicList.isEmpty && currentIndex < musicList.count {
+        if !musicList.playlist.isEmpty && currentIndex < musicList.playlist.count {
             updatePlayerForCurrentIndex()
         }
     }
@@ -276,7 +276,7 @@ class PlayerViewController: UIViewController {
     
     private func createShuffledIndices() {
         // 현재 곡을 제외한 나머지 곡들의 인덱스로 배열 생성
-        let indices = Array(0..<musicList.count).filter { $0 != currentIndex }
+        let indices = Array(0..<musicList.playlist.count).filter { $0 != currentIndex }
         
         // Fisher-Yates 알고리즘으로 셔플
         var shuffled = indices
@@ -335,14 +335,14 @@ class PlayerViewController: UIViewController {
     
     // 곡 재생 및 UI 갱신 함수
     private func updatePlayerForCurrentIndex() {
-        guard !musicList.isEmpty, currentIndex >= 0, currentIndex < musicList.count else { return }
+        guard !musicList.playlist.isEmpty, currentIndex >= 0, currentIndex < musicList.playlist.count else { return }
         
         // 현재 곡을 히스토리에 추가
         if playHistory.last != currentIndex {
             playHistory.append(currentIndex)
         }
         
-        let fileName = musicList[currentIndex].fileName
+        let fileName = musicList.playlist[currentIndex].fileName
         AudioManager.shared.prepareAudio(named: fileName, fileExtension: "mp3")
         AudioManager.shared.play()
         
@@ -350,8 +350,8 @@ class PlayerViewController: UIViewController {
         playButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
         
         // UI 업데이트
-        titleLabel.text = musicList[currentIndex].displayName
-        artistLabel.text = musicList[currentIndex].artist
+        titleLabel.text = musicList.playlist[currentIndex].title
+        artistLabel.text = musicList.playlist[currentIndex].artist
         // 필요시 albumImageView 등도 업데이트
         startPlaybackTimer()
     }
@@ -394,7 +394,7 @@ class PlayerViewController: UIViewController {
         } else {
             // 셔플 모드가 꺼져있을 때는 순차적으로 다음 곡 결정
             let nextIndex = currentIndex + 1
-            if nextIndex < musicList.count {
+            if nextIndex < musicList.playlist.count {
                 return nextIndex
             } else if isRepeatOn {
                 return 0  // 반복 모드면 처음으로
@@ -457,9 +457,6 @@ class PlayerViewController: UIViewController {
         AudioManager.shared.seekTo(time: TimeInterval(sender.value))
         updatePlaybackUI()
     }
-}
-#Preview {
-    PlayerViewController()
 }
 
 
