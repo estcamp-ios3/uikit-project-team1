@@ -17,18 +17,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     var nowPlayingIndex: Int? = nil
 
     // 고정된 mp3 파일 목록 (파일명, 표시 텍스트, 아티스트)
-    let musicList: [(fileName: String, displayName: String, artist: String)] = [
-        ("DLJ - Answer", "answer", "DLJ"),
-        ("Float", "Float", "Mr.Goldenfold"),
-        ("Dear Katara", "Dear Katara", "L.Dre"),
-        ("watermelt - summer", "summer", "watermelt"),
-        ("Fashion by Alex Productions", "Fashion", "Alex Productions"),
-        ("Chill Noons", "Chill Noons", "Kronicle"),
-        ("Chimes  Jeff Kaale", "Chimes", "Jeff Kaale"),
-        ("burbank - sorry i like you", "sorry i like you", "burbank"),
-        ("JapaneseMoodSong", "일본풍 음악", "Yamato"),
-        ("ChineseMoodSong", "중국풍 음악", "Li Wei"),
-    ]
+    let musicList: Playlist = Playlist(title: "Ronaldo, the GOAT", coverImageName: "calm_cover", playlist: [songs[0], songs[1], songs[2]])
 
     // MARK: - UI 구성 요소
     let imageView = UIImageView()
@@ -149,19 +138,19 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         guard let currentIndex = nowPlayingIndex else { return }
         let nextIndex = currentIndex + 1
-        if nextIndex < musicList.count {
+        if nextIndex < musicList.playlist.count {
           //  playMusic(at: nextIndex)
         }
     }
 
     // MARK: - 테이블뷰 DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return musicList.count
+        return musicList.playlist.count
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MusicCell", for: indexPath)
-        cell.textLabel?.text = musicList[indexPath.row].displayName
+        cell.textLabel?.text = musicList.playlist[indexPath.row].title
         return cell
     }
 
@@ -175,10 +164,4 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
 func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     // 아무것도 안 함!
     tableView.deselectRow(at: indexPath, animated: true)
-}
-
-
-
-#Preview {
-    MusicPlayerViewController()
 }
