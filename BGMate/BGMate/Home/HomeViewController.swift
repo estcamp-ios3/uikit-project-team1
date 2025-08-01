@@ -18,7 +18,7 @@ class HomeViewController: UIViewController {
         let layout = UICollectionViewFlowLayout()
         
         // Cell의 크기와 간격 정하기
-        layout.itemSize = CGSize(width: 150, height: 150)
+        layout.itemSize = CGSize(width: 150, height: 180)
         layout.minimumLineSpacing = 20 // 줄간격
         layout.minimumInteritemSpacing = 5 // 셀간격
         
