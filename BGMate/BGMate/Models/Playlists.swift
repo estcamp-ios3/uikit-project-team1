@@ -11,7 +11,7 @@ struct Playlist: Identifiable {
     let id: UUID = UUID()
     let title: String
     let coverImageName: String?
-    let songs: [String] // 음악 배열
+    var songs: [String] // 음악 배열
 }
 
 // 새로운 카테고리 이름으로 categoryList 구성
