@@ -55,8 +55,8 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         addTrackButton.setTitleColor(.white, for: .normal)
         addTrackButton.backgroundColor = UIColor.systemGray
         addTrackButton.layer.cornerRadius = 8
-        addTrackButton.isEnabled = false // 기능 제거
         addTrackButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
+        addTrackButton.addTarget(self, action: #selector(openTrackPicker), for: .touchUpInside)
         view.addSubview(addTrackButton)
 
         // ▶ 전체 재생 버튼
@@ -114,6 +114,24 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         playerVC.modalPresentationStyle = .fullScreen
         present(playerVC, animated: true, completion: nil)
     }
+    
+    //MARK: - 곡추가 버튼 동작
+    @objc func openTrackPicker() {
+        let pickerVC = TrackPickerViewController()
+        if let sheet = pickerVC.sheetPresentationController {
+            sheet.detents = [.medium(), .large()]
+            sheet.prefersGrabberVisible = true
+        }
+        
+        pickerVC.onTrackSelected = { [weak self] (newSong: String) in
+            guard let self = self else { return }
+            
+            self.musicList.songs.append(newSong)
+            self.tableView.reloadData()
+        }
+        
+        present(pickerVC, animated: true, completion: nil)
+    }
 //    // MARK: - 특정 인덱스 음악 재생
 //    func playMusic(at index: Int) {
 //        guard index < musicList.count else { return }
@@ -146,20 +164,26 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     // MARK: - 테이블뷰 DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return musicList.playlist.count
+
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MusicCell", for: indexPath)
         cell.textLabel?.text = musicList.playlist[indexPath.row].title
+
         return cell
     }
+
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+}
 
     // MARK: - 테이블뷰 Delegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // 아무 동작도 하지 않음 (개별 곡 선택 시 재생 제거)
         tableView.deselectRow(at: indexPath, animated: true)
     }
-}
 
 func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
     // 아무것도 안 함!
