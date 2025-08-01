@@ -11,10 +11,10 @@ class AddCell: UICollectionViewCell {
     
     let nameLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.font = .systemFont(ofSize: 30, weight: .medium)
         label.textAlignment = .center
         label.textColor = .black
-        label.backgroundColor = .systemBackground
+        label.backgroundColor = .systemGray6
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -28,10 +28,10 @@ class AddCell: UICollectionViewCell {
         
         // 오토레이아웃 설정
         NSLayoutConstraint.activate([
-            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            nameLabel.heightAnchor.constraint(equalToConstant: 140),
+            nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 1),
+            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 1),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -1),
+            nameLabel.heightAnchor.constraint(equalToConstant: 150),
         ])
         
     }
