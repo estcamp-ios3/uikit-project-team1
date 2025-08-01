@@ -109,7 +109,6 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     
         view.addSubview(modalLabel)
         
-//        stackView.addArrangedSubview(modalLabel)
         stackView.addArrangedSubview(nameTextField)
         stackView.addArrangedSubview(vStackView)
         
@@ -139,7 +138,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             nameTextField.heightAnchor.constraint(equalToConstant: 44),
             
             createButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            createButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -20),
+            createButton.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -20),
             createButton.widthAnchor.constraint(equalTo:view.widthAnchor, multiplier: 1, constant: -32),
             createButton.heightAnchor.constraint(equalToConstant: 44)
         ])
@@ -159,6 +158,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         layout.scrollDirection = .vertical
 //        layout.minimumLineSpacing = 10
 //        layout.minimumInteritemSpacing = 10
+        
         let itemWidth = (UIScreen.main.bounds.width - 16 * 2 - 10 * 2) / 3 // 3열, 좌우 여백(16) 및 아이템 간 여백(10)
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth + 20) // 이미지 + 텍스트 공간
         
@@ -210,15 +210,16 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     private func didTapCreate() {
         let selectedTagStrings = selectedCategories.map { $0.tags }
         
-        // 태그가 하나라도 겹치는 곡들만 필터링
+        // 태그가 겹치는 곡들 필터링
         let filteredSongs = songs.filter { song in
             !Set(song.tags).isDisjoint(with: selectedTagStrings)
         }
         
         // 플레이리스트 제목 및 커버 설정
         let title = nameTextField.text ?? "이름 없는 플레이리스트"
-        let coverImageName = selectedCategories.first?.coverImageName // 첫번째 선택 태그 기준
 
+        let coverImageName = selectedCategories.randomElement()?.coverImageName
+        
         let newPlaylist = Playlist(title: title, coverImageName: coverImageName, playlist: filteredSongs)
         
         // 전역 변수에 추가
