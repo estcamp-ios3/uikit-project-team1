@@ -11,7 +11,7 @@ class NationCell: UICollectionViewCell {
     
     let nameLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 12, weight: .medium)
+        label.font = .systemFont(ofSize: 15, weight: .medium)
         label.textAlignment = .center
         label.textColor = .black
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -34,15 +34,15 @@ class NationCell: UICollectionViewCell {
         
         // 오토레이아웃 설정
         NSLayoutConstraint.activate([
-            flagLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
-            flagLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            flagLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            flagLabel.heightAnchor.constraint(equalToConstant: 120),
+            flagLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
+            flagLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            flagLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            flagLabel.heightAnchor.constraint(equalToConstant: 150),
             
-            nameLabel.topAnchor.constraint(equalTo: flagLabel.bottomAnchor, constant: 4),
-            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
-            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
-            nameLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -8)
+            nameLabel.topAnchor.constraint(equalTo: flagLabel.bottomAnchor, constant: 5),
+            nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
+            nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -5),
+            nameLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -5)
         ])
         
     }
