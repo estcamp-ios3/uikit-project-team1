@@ -14,7 +14,6 @@ struct Tags: Identifiable {
     let tags: String
 }
 
-// 새로운 카테고리 이름으로 categoryList 구성
 let tagList: [Tags] = [
     // 1. 분위기 관련
     Tags(title: "잔잔한", coverImageName: "calm_cover", tags:"relax"),
