@@ -14,15 +14,12 @@ class NationCell: UICollectionViewCell {
         label.font = .systemFont(ofSize: 12, weight: .medium)
         label.textAlignment = .center
         label.textColor = .black
-        label.backgroundColor = .white
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
     let flagLabel: UIImageView = {
         let image = UIImageView()
-        image.image = UIImage(systemName: "")
         image.contentMode = .scaleAspectFit
-        image.frame = CGRect(x: 0, y: 0, width: 75, height: 75)
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
@@ -31,7 +28,7 @@ class NationCell: UICollectionViewCell {
         
         super.init(frame: frame)
         
-        self.backgroundColor = .red
+        self.backgroundColor = backgroundColor
         self.contentView.addSubview(flagLabel)
         self.contentView.addSubview(nameLabel)
         
@@ -40,6 +37,7 @@ class NationCell: UICollectionViewCell {
             flagLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
             flagLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
             flagLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+            flagLabel.heightAnchor.constraint(equalToConstant: 120),
             
             nameLabel.topAnchor.constraint(equalTo: flagLabel.bottomAnchor, constant: 4),
             nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
