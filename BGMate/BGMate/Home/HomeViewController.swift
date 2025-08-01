@@ -18,7 +18,7 @@ class HomeViewController: UIViewController {
         let layout = UICollectionViewFlowLayout()
         
         // Cell의 크기와 간격 정하기
-        layout.itemSize = CGSize(width: 150, height: 150)
+        layout.itemSize = CGSize(width: 150, height: 180)
         layout.minimumLineSpacing = 20 // 줄간격
         layout.minimumInteritemSpacing = 5 // 셀간격
         
@@ -56,6 +56,7 @@ class HomeViewController: UIViewController {
         collectionView.delegate = self
         
         collectionView.register(NationCell.self, forCellWithReuseIdentifier: "NationCell")
+        collectionView.register(AddCell.self, forCellWithReuseIdentifier: "AddCell")
     }
 }
 
@@ -69,9 +70,8 @@ extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.item == 0 {
             // 첫 번째 셀
-            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AddCell", for: indexPath) as! AddCell
             
-//            cell.flagLabel.text = "+"
             cell.nameLabel.text = "ADD"
             
             return cell
@@ -79,7 +79,7 @@ extension HomeViewController: UICollectionViewDataSource {
             // cell의 재활용
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             
-            cell.flagLabel.image = UIImage(systemName: playlists[indexPath.item - 1].coverImageName ?? "")
+            cell.flagLabel.image = UIImage(named: playlists[indexPath.item - 1].coverImageName ?? "")
             cell.nameLabel.text = playlists[indexPath.item - 1].title
             
             return cell
