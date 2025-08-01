@@ -57,6 +57,12 @@ class HomeViewController: UIViewController {
         
         collectionView.register(NationCell.self, forCellWithReuseIdentifier: "NationCell")
         collectionView.register(AddCell.self, forCellWithReuseIdentifier: "AddCell")
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadPlaylists), name: .playlistCreated, object: nil)
+    }
+    
+    @objc func reloadPlaylists() {
+            collectionView.reloadData()
     }
 }
 
