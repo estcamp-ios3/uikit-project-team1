@@ -10,8 +10,8 @@ import UIKit
 class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource {
     
     var tableView = UITableView()
-    var availableTracks: [String] = ["New Song 1", "New Song 2", "New Song 3"] // Song.swift의 전역 songs 사용
-    var onTrackSelected: ((String) -> Void)? // 선택 결과 전달
+    var availableTracks: [Song] = songs // Song.swift의 전역 songs 사용
+    var onTrackSelected: ((Song) -> Void)? // 선택 결과 전달
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -40,7 +40,7 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "TrackCell", for: indexPath)
         let track = availableTracks[indexPath.row]
-        cell.textLabel?.text = availableTracks[indexPath.row]
+        cell.textLabel?.text = "\(track.title) - \(track.artist)"
         return cell
     }
     

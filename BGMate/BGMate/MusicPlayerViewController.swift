@@ -17,7 +17,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     var nowPlayingIndex: Int? = nil
 
     // 고정된 mp3 파일 목록 (파일명, 표시 텍스트, 아티스트)
-    let musicList: Playlist = Playlist(title: "Ronaldo, the GOAT", coverImageName: "calm_cover", playlist: [songs[0], songs[1], songs[2]])
+    var musicList: Playlist = Playlist(title: "Ronaldo, the GOAT", coverImageName: "calm_cover", playlist: [songs[0], songs[1], songs[2]])
 
     // MARK: - UI 구성 요소
     let imageView = UIImageView()
@@ -117,21 +117,21 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     
     //MARK: - 곡추가 버튼 동작
     @objc func openTrackPicker() {
-        let pickerVC = TrackPickerViewController()
-        if let sheet = pickerVC.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-        }
-        
-        pickerVC.onTrackSelected = { [weak self] (newSong: String) in
+           let pickerVC = TrackPickerViewController()
+           if let sheet = pickerVC.sheetPresentationController {
+               sheet.detents = [.medium(), .large()]
+               sheet.prefersGrabberVisible = true
+           }
+           
+        pickerVC.onTrackSelected = { [weak self] (newSong: Song) in
             guard let self = self else { return }
-            
-            self.musicList.songs.append(newSong)
+            self.musicList = Playlist(title: self.musicList.title,
+                                      coverImageName: self.musicList.coverImageName,
+                                      playlist: self.musicList.playlist + [newSong])
             self.tableView.reloadData()
         }
-        
-        present(pickerVC, animated: true, completion: nil)
-    }
+           present(pickerVC, animated: true, completion: nil)
+       }
 //    // MARK: - 특정 인덱스 음악 재생
 //    func playMusic(at index: Int) {
 //        guard index < musicList.count else { return }
@@ -185,7 +185,3 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
-func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-    // 아무것도 안 함!
-    tableView.deselectRow(at: indexPath, animated: true)
-}
