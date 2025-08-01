@@ -7,7 +7,7 @@
 
 import UIKit
 
-class CategoryCell: UICollectionViewCell {
+class TagsCell: UICollectionViewCell {
     static let identifier = "CategoryCell"
 
     private let imageView: UIImageView = {
@@ -78,9 +78,8 @@ class CategoryCell: UICollectionViewCell {
         ])
     }
 
-    func configure(with category: Category) {
-        titleLabel.text = category.title
-        // 이미지 설정 (category.coverImageName이 있다면)
+    func configure(with category: Tags) {
+        titleLabel.text = category.title // + category.tags
         if let imageName = category.coverImageName {
             imageView.image = UIImage(named: imageName)
         } else {

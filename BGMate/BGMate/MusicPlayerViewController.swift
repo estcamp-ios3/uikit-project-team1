@@ -17,11 +17,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     var nowPlayingIndex: Int? = nil
 
     // 고정된 mp3 파일 목록 (파일명, 표시 텍스트, 아티스트)
-    var musicList: Playlist = Playlist(
-           title: "오후 일식",
-           coverImageName: "japanese",
-           songs: ["DLJ - Answer", "JapaneseMoodSong", "ChineseMoodSong"]
-       )
+    let musicList: Playlist = Playlist(title: "Ronaldo, the GOAT", coverImageName: "calm_cover", playlist: [songs[0], songs[1], songs[2]])
 
     // MARK: - UI 구성 요소
     let imageView = UIImageView()
@@ -69,7 +65,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         playAllButton.backgroundColor = UIColor.systemBlue
         playAllButton.setTitleColor(.white, for: .normal)
         playAllButton.layer.cornerRadius = 8
-        playAllButton.addTarget(self, action: #selector(showPlayer), for: .touchUpInside)
+        playAllButton.addTarget(self, action: #selector(playAllMusic), for: .touchUpInside)
         playAllButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         view.addSubview(playAllButton)
         
@@ -92,16 +88,13 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
             titleLabel.leadingAnchor.constraint(equalTo: imageView.trailingAnchor, constant: 16),
             titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             
-            addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 30),
             addTrackButton.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 12),
-            addTrackButton.widthAnchor.constraint(equalToConstant: 95),
             addTrackButton.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            addTrackButton.widthAnchor.constraint(equalToConstant: 100),
+            addTrackButton.widthAnchor.constraint(equalToConstant: 95),
             addTrackButton.heightAnchor.constraint(equalToConstant: 44),
 
             playAllButton.centerYAnchor.constraint(equalTo: addTrackButton.centerYAnchor),
             playAllButton.leadingAnchor.constraint(equalTo: addTrackButton.trailingAnchor, constant: 12),
-            playAllButton.widthAnchor.constraint(equalToConstant: 120),
             playAllButton.widthAnchor.constraint(equalToConstant: 120),
             playAllButton.heightAnchor.constraint(equalToConstant: 44),
 
@@ -114,16 +107,12 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
 
     // MARK: - 전체 재생 (순차 재생)
     @objc func playAllMusic() {
-         // PlayerViewController에서 이 musicList.songs를 이용해 재생하도록 구성
-         print("전체 재생 시작: \(musicList.songs)")
-     }
-
-    @objc private func showPlayer() {
+        // PlayerViewController를 모달로 띄우고, 음악 리스트와 첫 곡 정보를 전달
         let playerVC = PlayerViewController()
-        playerVC.modalPresentationStyle = .fullScreen   // 여기서 풀스크린 모달
+        playerVC.musicList = musicList
+        playerVC.currentIndex = 0
+        playerVC.modalPresentationStyle = .fullScreen
         present(playerVC, animated: true, completion: nil)
-        playAllMusic()
-        
     }
     
     //MARK: - 곡추가 버튼 동작
@@ -167,19 +156,21 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         guard let currentIndex = nowPlayingIndex else { return }
         let nextIndex = currentIndex + 1
-        if nextIndex < musicList.songs.count {
-          //  playMusic(at: nextIndex)Value
+        if nextIndex < musicList.playlist.count {
+          //  playMusic(at: nextIndex)
         }
     }
 
     // MARK: - 테이블뷰 DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return musicList.songs.count
+        return musicList.playlist.count
+
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MusicCell", for: indexPath)
-        cell.textLabel?.text = musicList.songs[indexPath.row]
+        cell.textLabel?.text = musicList.playlist[indexPath.row].title
+
         return cell
     }
 
@@ -194,10 +185,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.deselectRow(at: indexPath, animated: true)
     }
 
-
-
-
-
-#Preview {
-    MusicPlayerViewController()
+func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    // 아무것도 안 함!
+    tableView.deselectRow(at: indexPath, animated: true)
 }

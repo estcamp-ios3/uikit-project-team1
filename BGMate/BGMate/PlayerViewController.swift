@@ -6,18 +6,22 @@
 //
 
 import UIKit
-import AVFoundation
 
-class PlayerViewController: UIViewController, AVAudioPlayerDelegate {
+class PlayerViewController: UIViewController {
     
     // 외부에서 받을 음악 리스트와 현재 인덱스
-    var musicList: [(fileName: String, displayName: String, artist: String)] = []
+    var musicList: Playlist!
     var currentIndex: Int = 0
     
-    // 타이머로 재생 위치 갱신
-    private var playbackTimer: Timer?
-
-    // MARK: - UI Components
+    // 셔플, 반복 상태
+    private var isShuffleOn: Bool = false
+    private var isRepeatOn: Bool = false
+    
+    // 셔플된 재생 순서를 저장할 배열
+    private var shuffledIndices: [Int] = []
+    
+    // 재생 히스토리를 저장할 배열
+    private var playHistory: [Int] = []
     
     // 상단 드롭다운 화살표 (닫기용)
     private let dismissButton: UIButton = {
@@ -32,8 +36,9 @@ class PlayerViewController: UIViewController, AVAudioPlayerDelegate {
     // 플레이리스트/상단 제목
     private let playlistLabel: UILabel = {
         let label = UILabel()
-        label.text = "Chill Lofi Music ~ lofi hip hop mix"
-        label.font = .systemFont(ofSize: 14, weight: .medium)
+        label.text = //"Chill Lofi Music ~ lofi hip hop mix"
+        "오후 일식"
+        label.font = .systemFont(ofSize: 20, weight: .medium)
         label.textColor = .white
         label.textAlignment = .center
         label.translatesAutoresizingMaskIntoConstraints = false
@@ -66,7 +71,7 @@ class PlayerViewController: UIViewController, AVAudioPlayerDelegate {
     // 아티스트
     private let artistLabel: UILabel = {
         let label = UILabel()
-        label.text = "DLJ"
+        label.text = ""
         label.font = .systemFont(ofSize: 20, weight: .regular)
         label.textColor = .white.withAlphaComponent(0.8)
         label.textAlignment = .left
@@ -134,37 +139,54 @@ class PlayerViewController: UIViewController, AVAudioPlayerDelegate {
     private let shuffleButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "shuffle"), for: .normal)
-        button.tintColor = .white.withAlphaComponent(0.7)
+        button.tintColor = .white.withAlphaComponent(0.2)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     private let repeatButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "repeat"), for: .normal)
-        button.tintColor = .white.withAlphaComponent(0.7)
+        button.tintColor = .white.withAlphaComponent(0.2)
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
     
-    // MARK: - View Lifecycle
+    // 타이머로 재생 위치 갱신
+    private var playbackTimer: Timer?
     
     override func viewDidLoad() {
         self.modalPresentationStyle = .fullScreen
-        if !musicList.isEmpty && currentIndex < musicList.count {
-            let fileName = musicList[currentIndex].fileName
-            AudioManager.shared.prepareAudio(named: fileName, fileExtension: "mp3")
-            AudioManager.shared.play()
-            titleLabel.text = musicList[currentIndex].displayName
-            artistLabel.text = musicList[currentIndex].artist
-        }
         super.viewDidLoad()
         view.backgroundColor = .gray
         setupUI()
         setupActions()
-        startPlaybackTimer()
+        setupNotifications()
+        
+        // musicList와 currentIndex가 세팅되어 있으면 해당 곡 재생
+        if !musicList.playlist.isEmpty && currentIndex < musicList.playlist.count {
+            updatePlayerForCurrentIndex()
+        }
     }
     
-    // MARK: - UI Setup
+    private func setupNotifications() {
+        // 재생 완료 알림
+        NotificationCenter.default.addObserver(self,
+        selector: #selector(handlePlaybackFinished),
+        name: .AVPlayerItemDidPlayToEndTime, object: nil)
+    }
+    
+    @objc private func handlePlaybackFinished() {
+        if let nextIndex = getNextIndex() {
+            if isShuffleOn {
+                shuffledIndices.removeFirst()  // 자동 재생으로 다음 곡으로 이동할 때도 셔플 배열에서 제거
+            }
+            currentIndex = nextIndex
+            updatePlayerForCurrentIndex()
+        } else {
+            // 다음 곡이 없고 반복도 꺼져있으면 재생 중지
+            playButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        }
+    }
     
     private func setupUI() {
         // 상단 dismiss
@@ -243,22 +265,171 @@ class PlayerViewController: UIViewController, AVAudioPlayerDelegate {
         playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
         prevButton.addTarget(self, action: #selector(prevTapped), for: .touchUpInside)
         nextButton.addTarget(self, action: #selector(nextTapped), for: .touchUpInside)
+        shuffleButton.addTarget(self, action: #selector(shuffleTapped), for: .touchUpInside)
+        repeatButton.addTarget(self, action: #selector(repeatTapped), for: .touchUpInside)
         progressSlider.addTarget(self, action: #selector(sliderValueChanged), for: .valueChanged)
     }
     
-    // MARK: - Actions
+    // 셔플 순서 생성 (첫 곡 제외)
+    // 원본 셔플 순서를 저장할 배열 추가
+    private var originalShuffledIndices: [Int] = []
+    
+    private func createShuffledIndices() {
+        // 현재 곡을 제외한 나머지 곡들의 인덱스로 배열 생성
+        let indices = Array(0..<musicList.playlist.count).filter { $0 != currentIndex }
+        
+        // Fisher-Yates 알고리즘으로 셔플
+        var shuffled = indices
+        for i in (0..<shuffled.count).reversed() {
+            let j = Int.random(in: 0...i)
+            shuffled.swapAt(i, j)
+        }
+        
+        // 원본 셔플 순서 저장
+        originalShuffledIndices = shuffled
+        // 현재 재생할 셔플 순서 설정
+        shuffledIndices = shuffled
+    }
+        
+    @objc private func dismissTapped() {
+        stopPlaybackTimer()
+        self.dismiss(animated: true, completion: nil)
+    }
+    // 플레이 중 이면 pause 버튼 형태로 보여주고, 반대로 pause 상태면 play버튼으로 보여줌
+    @objc private func playTapped() {
+        if AudioManager.shared.isPlaying {
+            AudioManager.shared.pause()
+            playButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
+        } else {
+            AudioManager.shared.play()
+            playButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+        }
+    }
+    // shuffle, repeat 실행전 투명도 0.4, 실행시 full white color
+    @objc private func shuffleTapped() {
+        isShuffleOn.toggle()
+        UIView.animate(withDuration: 0.4) {
+            self.shuffleButton.tintColor = self.isShuffleOn ? .white : .white.withAlphaComponent(0.4)
+        }
+        
+        // 현재 재생 중인 곡의 인덱스 저장
+        _ = currentIndex
+        
+        if isShuffleOn {
+            // 셔플 모드를 켤 때
+            playHistory = [currentIndex] // 현재 곡만 남기고 히스토리 초기화
+            createShuffledIndices()
+        } else {
+            // 셔플 모드를 끌 때
+            playHistory = [currentIndex] // 현재 곡만 남기고 히스토리 초기화
+            shuffledIndices = []
+            originalShuffledIndices = []
+        }
+    }
+    @objc private func repeatTapped() {
+        isRepeatOn.toggle()
+        UIView.animate(withDuration: 0.4) {
+            self.repeatButton.tintColor = self.isRepeatOn ? .white : .white.withAlphaComponent(0.4)
+        }
+    }
     
     // 곡 재생 및 UI 갱신 함수
     private func updatePlayerForCurrentIndex() {
-        guard !musicList.isEmpty, currentIndex >= 0, currentIndex < musicList.count else { return }
-        let fileName = musicList[currentIndex].fileName
-        AudioManager.shared.prepareAudio(named: fileName, fileExtension: "mp3", delegate: self)
+        guard !musicList.playlist.isEmpty, currentIndex >= 0, currentIndex < musicList.playlist.count else { return }
+        
+        // 현재 곡을 히스토리에 추가
+        if playHistory.last != currentIndex {
+            playHistory.append(currentIndex)
+        }
+        
+        let fileName = musicList.playlist[currentIndex].fileName
+        AudioManager.shared.prepareAudio(named: fileName, fileExtension: "mp3")
         AudioManager.shared.play()
-        titleLabel.text = musicList[currentIndex].displayName
-        artistLabel.text = musicList[currentIndex].artist
+        
+        // 재생 버튼 이미지 업데이트 (재생 중이므로 pause 이미지로)
+        playButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
+        
+        // UI 업데이트
+        titleLabel.text = musicList.playlist[currentIndex].title
+        artistLabel.text = musicList.playlist[currentIndex].artist
+        // 필요시 albumImageView 등도 업데이트
         startPlaybackTimer()
     }
-
+    @objc private func prevTapped() {
+        let currentTime = AudioManager.shared.playerCurrentTime
+        if currentTime > 1.0 {
+            // 현재 곡 처음으로
+            AudioManager.shared.seekTo(time: 0)
+        } else if let prevIndex = getPrevIndex() {
+            // 이전 곡이 있으면 이동
+            playHistory.removeLast() // 현재 곡 제거
+            currentIndex = prevIndex
+            
+            if isShuffleOn {
+                // 이전 곡으로 돌아갈 때 셔플 순서 복원
+                shuffledIndices = originalShuffledIndices.filter { $0 != currentIndex }
+            }
+            
+            updatePlayerForCurrentIndex()
+        } else {
+            // 현재 곡이 첫 곡이면 처음으로만 이동
+            AudioManager.shared.seekTo(time: 0)
+        }
+    }
+    
+    // 다음 곡 인덱스 계산
+    private func getNextIndex() -> Int? {
+        if isShuffleOn {
+            // 셔플 모드일 때
+            if let nextIndex = shuffledIndices.first {
+                // 셔플된 다음 곡이 있으면 반환
+                return nextIndex
+            } else if isRepeatOn {
+                // 반복 모드가 켜져있으면 새로운 셔플 순서 생성
+                createShuffledIndices()
+                return shuffledIndices.first
+            }
+            // 셔플된 곡을 모두 재생했고 반복 모드도 꺼져있으면 nil 반환
+            return nil
+        } else {
+            // 셔플 모드가 꺼져있을 때는 순차적으로 다음 곡 결정
+            let nextIndex = currentIndex + 1
+            if nextIndex < musicList.playlist.count {
+                return nextIndex
+            } else if isRepeatOn {
+                return 0  // 반복 모드면 처음으로
+            }
+        }
+        
+        return nil  // 더 이상 재생할 곡이 없음
+    }
+    
+    private func getPrevIndex() -> Int? {
+        if isShuffleOn {
+            // 셔플 모드일 때는 히스토리 기반으로 이전 곡 결정
+            if playHistory.count > 1 {
+                return playHistory[playHistory.count - 2]
+            }
+        } else {
+            // 셔플 모드가 꺼져있을 때는 현재 인덱스 기준으로 이전 곡 결정
+            let prevIndex = currentIndex - 1
+            if prevIndex >= 0 {
+                return prevIndex
+            }
+        }
+        return nil
+    }
+    
+    @objc private func nextTapped() {
+        if let nextIndex = getNextIndex() {
+            if isShuffleOn {
+                shuffledIndices.removeFirst()  // 다음 곡으로 이동할 때만 셔플 배열에서 제거
+            }
+            currentIndex = nextIndex
+            updatePlayerForCurrentIndex()
+        }
+    }
+    
     // 타이머 시작/정지 및 슬라이더/라벨 갱신
     private func startPlaybackTimer() {
         playbackTimer?.invalidate()
@@ -286,47 +457,7 @@ class PlayerViewController: UIViewController, AVAudioPlayerDelegate {
         AudioManager.shared.seekTo(time: TimeInterval(sender.value))
         updatePlaybackUI()
     }
-    
-    @objc private func dismissTapped() {
-        stopPlaybackTimer()
-        self.dismiss(animated: true, completion: nil)
-    }
-    // 플레이 중 이면 pause 버튼 형태로 보여주고, 반대로 pause 상태면 play버튼으로 보여줌
-    @objc private func playTapped() {
-        if AudioManager.shared.isPlaying {
-            AudioManager.shared.pause()
-            playButton.setImage(UIImage(systemName: "play.fill"), for: .normal)
-        } else {
-            AudioManager.shared.play()
-            playButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
-        }
-    }
-    @objc private func prevTapped() {
-        let currentTime = AudioManager.shared.playerCurrentTime
-        if currentTime > 1.0 {
-            AudioManager.shared.seekTo(time: 0)
-        } else if currentIndex > 0 {
-            currentIndex -= 1
-            updatePlayerForCurrentIndex()
-        }
-    }
-    @objc private func nextTapped() {
-        if currentIndex < musicList.count - 1 {
-            currentIndex += 1
-            updatePlayerForCurrentIndex()
-        }
-    }
+}
 
-    // AVAudioPlayerDelegate: 곡이 끝나면 다음 곡으로 자동 이동
-    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        if currentIndex < musicList.count - 1 {
-            currentIndex += 1
-            updatePlayerForCurrentIndex()
-        }
-    }
-}
-#Preview {
-    PlayerViewController()
-}
 
 

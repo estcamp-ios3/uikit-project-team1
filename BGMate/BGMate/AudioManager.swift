@@ -7,7 +7,7 @@
 
 import AVFoundation
 
-class AudioManager {
+class AudioManager: NSObject, AVAudioPlayerDelegate {
     
     // Singleton 패턴
     static let shared = AudioManager()
@@ -15,7 +15,9 @@ class AudioManager {
     // 로컬 미디어 파일 재생은 AVFoundation이 제공하는 AVAudioPlayer를 활용
     private var player: AVAudioPlayer?
     
-    private init() {}
+    private override init() {
+        super.init()
+    }
     
     
     // MARK: - 연산프로퍼티
@@ -45,14 +47,14 @@ class AudioManager {
     
     // MARK: - 메서드
     
-    func prepareAudio(named name: String, fileExtension: String, delegate: AVAudioPlayerDelegate? = nil) {
+    func prepareAudio(named name: String, fileExtension: String) {
         guard let url = Bundle.main.url(forResource: name, withExtension: fileExtension) else {
             print("오디오 파일을 찾을 수 없습니다.")
             return
         }
         do {
             player = try AVAudioPlayer(contentsOf: url)
-            player?.delegate = delegate
+            player?.delegate = self
             player?.prepareToPlay()
         } catch {
             print("오디오 플레이어 초기화 실패: \(error.localizedDescription)")
@@ -80,5 +82,11 @@ class AudioManager {
     
     func setVolume(_ value: Float) {
         player?.volume = value
+    }
+    
+    // MARK: - AVAudioPlayerDelegate
+    
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        NotificationCenter.default.post(name: .AVPlayerItemDidPlayToEndTime, object: nil)
     }
 }
