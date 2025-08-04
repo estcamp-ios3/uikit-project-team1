@@ -239,6 +239,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         
         // 싱글톤 변수에 추가
         PlaylistManager.shared.playlists.append(newPlaylist)
+        print("Playlist Created: \(newPlaylist)")
         
         NotificationCenter.default.post(name: .playlistCreated, object: nil)
         
