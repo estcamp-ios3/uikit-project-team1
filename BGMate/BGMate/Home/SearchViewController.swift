@@ -24,7 +24,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         setupTableView()
         
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-            view.addGestureRecognizer(tapGesture)
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
     }
     
     private func setupSearchBar() {
@@ -63,15 +64,14 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
-
-        cell.textLabel?.text = filteredResults[indexPath.row].title        
+        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+        
+        cell.textLabel?.text = filteredResults[indexPath.row].title
         cell.imageView?.image = UIImage(named: filteredResults[indexPath.row].coverImageName ?? "")
         return cell
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("✅ Row tapped: \(indexPath.row)")
         tableView.deselectRow(at: indexPath, animated: true)
         playAllMusic()
     }
@@ -93,7 +93,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         tableView.reloadData()
         searchBar.resignFirstResponder()
     }
-
+    
     @objc func dismissKeyboard() {
         view.endEditing(true)
     }
