@@ -1,8 +1,8 @@
 //
 //  NationCell.swift
-//  Nataions
+//  BGMate
 //
-//  Created by Jongwook Park on 7/22/25.
+//  Created by 권태우 on 7/30/25.
 //
 
 import UIKit
@@ -32,7 +32,7 @@ class NationCell: UICollectionViewCell {
         self.contentView.addSubview(flagLabel)
         self.contentView.addSubview(nameLabel)
         
-        // 오토레이아웃 설정
+        // Set up Auto Layout constraints
         NSLayoutConstraint.activate([
             flagLabel.topAnchor.constraint(equalTo: contentView.topAnchor),
             flagLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
@@ -47,7 +47,7 @@ class NationCell: UICollectionViewCell {
         
     }
     
-    // 필수요소
+    // Required initializer
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
