@@ -23,10 +23,10 @@ class AddCell: UICollectionViewCell {
         
         super.init(frame: frame)
         
-//        self.backgroundColor = .red
+        // Add nameLabel to content view
         self.contentView.addSubview(nameLabel)
         
-        // 오토레이아웃 설정
+        // Set up Auto Layout constraints
         NSLayoutConstraint.activate([
             nameLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 1),
             nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 1),
@@ -36,7 +36,7 @@ class AddCell: UICollectionViewCell {
         
     }
     
-    // 필수요소
+    // Required initializer
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
