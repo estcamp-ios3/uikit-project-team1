@@ -12,6 +12,12 @@ class PlayerViewController: UIViewController {
     // 외부에서 받을 음악 리스트와 현재 인덱스
     var musicList: Playlist!
     var currentIndex: Int = 0
+    var shouldRestartPlayback: Bool = true  // 재생을 다시 시작할지 여부
+    
+    // MARK: - 미니플레이어 관련 프로퍼티
+    weak var miniPlayer: MiniPlayerViewController?
+    private var initialTouchPoint: CGPoint = CGPoint(x: 0, y: 0)
+    private let dismissThreshold: CGFloat = 200
     
     // 셔플, 반복 상태
     private var isShuffleOn: Bool = false
@@ -158,13 +164,32 @@ class PlayerViewController: UIViewController {
         self.modalPresentationStyle = .fullScreen
         super.viewDidLoad()
         view.backgroundColor = .gray
+        setupDismissGesture()
         setupUI()
         setupActions()
         setupNotifications()
         
-        // musicList와 currentIndex가 세팅되어 있으면 해당 곡 재생
+        // musicList와 currentIndex가 세팅되어 있으면 해당 곡 재생 (shouldRestartPlayback 확인)
         if !musicList.playlist.isEmpty && currentIndex < musicList.playlist.count {
-            updatePlayerForCurrentIndex()
+            if shouldRestartPlayback {
+                updatePlayerForCurrentIndex()
+            } else {
+                updateUIForCurrentIndex()  // UI만 업데이트하고 재생은 유지
+            }
+        }
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // 미니플레이어 연결 설정 (한번만 실행)
+        if miniPlayer == nil {
+            setupMiniPlayerConnection()
+        }
+        
+        // 미니플레이어에서 풀스크린으로 전환 시 상태 동기화
+        if !shouldRestartPlayback {
+            syncFromMainTabBarController()
         }
     }
     
@@ -173,6 +198,60 @@ class PlayerViewController: UIViewController {
         NotificationCenter.default.addObserver(self,
         selector: #selector(handlePlaybackFinished),
         name: .AVPlayerItemDidPlayToEndTime, object: nil)
+    }
+    
+    // MARK: - 제스처 관련 메서드
+    private func setupDismissGesture() {
+        let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handleDismissPan(_:)))
+        view.addGestureRecognizer(panGesture)
+    }
+    
+    @objc private func handleDismissPan(_ gesture: UIPanGestureRecognizer) {
+        let touchPoint = gesture.location(in: view.window)
+        
+        switch gesture.state {
+        case .began:
+            initialTouchPoint = touchPoint
+        case .changed:
+            if touchPoint.y - initialTouchPoint.y > 0 {
+                let draggedDistance = touchPoint.y - initialTouchPoint.y
+                view.frame.origin.y = draggedDistance
+                
+                // 스와이프 진행도에 따라 배경 투명도 조절 (뒷배경 보이기 효과)
+                let progress = min(draggedDistance / dismissThreshold, 1.0)
+                let alpha = 1.0 - (progress * 0.3) // 최대 30%까지 투명해짐
+                view.backgroundColor = view.backgroundColor?.withAlphaComponent(alpha)
+            }
+        case .ended, .cancelled:
+            if touchPoint.y - initialTouchPoint.y > dismissThreshold {
+                minimizeToMiniPlayer()
+            } else {
+                UIView.animate(withDuration: 0.2) {
+                    self.view.frame.origin.y = 0
+                    self.view.backgroundColor = self.view.backgroundColor?.withAlphaComponent(1.0)
+                }
+            }
+        default:
+            break
+        }
+    }
+    
+    // MARK: - 미니플레이어 관련 메서드
+    private func minimizeToMiniPlayer() {
+        miniPlayer?.updateNowPlaying(
+            song: musicList.playlist[currentIndex],
+            image: albumImageView.image
+        )
+        miniPlayer?.updatePlaybackState(isPlaying: AudioManager.shared.isPlaying)
+        miniPlayer?.show()
+        
+        // 델리게이트를 MainTabBarController로 다시 설정 & 현재 재생 정보 저장
+        if let tabBarController = presentingViewController as? MainTabBarController {
+            miniPlayer?.delegate = tabBarController
+            tabBarController.setCurrentPlayingInfo(playlist: musicList, index: currentIndex)
+        }
+        
+        dismiss(animated: true)
     }
     
     @objc private func handlePlaybackFinished() {
@@ -293,7 +372,7 @@ class PlayerViewController: UIViewController {
         
     @objc private func dismissTapped() {
         stopPlaybackTimer()
-        self.dismiss(animated: true, completion: nil)
+        minimizeToMiniPlayer()
     }
     // 플레이 중 이면 pause 버튼 형태로 보여주고, 반대로 pause 상태면 play버튼으로 보여줌
     @objc private func playTapped() {
@@ -325,12 +404,18 @@ class PlayerViewController: UIViewController {
             shuffledIndices = []
             originalShuffledIndices = []
         }
+        
+        // MainTabBarController와 상태 동기화
+        syncWithMainTabBarController()
     }
     @objc private func repeatTapped() {
         isRepeatOn.toggle()
         UIView.animate(withDuration: 0.4) {
             self.repeatButton.tintColor = self.isRepeatOn ? .white : .white.withAlphaComponent(0.4)
         }
+        
+        // MainTabBarController와 상태 동기화
+        syncWithMainTabBarController()
     }
     
     // 곡 재생 및 UI 갱신 함수
@@ -352,9 +437,102 @@ class PlayerViewController: UIViewController {
         // UI 업데이트
         titleLabel.text = musicList.playlist[currentIndex].title
         artistLabel.text = musicList.playlist[currentIndex].artist
-        // 필요시 albumImageView 등도 업데이트
+        
+        // 미니플레이어도 업데이트
+        miniPlayer?.updateNowPlaying(
+            song: musicList.playlist[currentIndex],
+            image: albumImageView.image
+        )
+        miniPlayer?.updatePlaybackState(isPlaying: true)
+        
+        // MainTabBarController의 재생 정보도 업데이트
+        if let tabBarController = presentingViewController as? MainTabBarController {
+            tabBarController.setCurrentPlayingInfo(playlist: musicList, index: currentIndex)
+        }
+        
+        // 셔플/반복 상태도 동기화
+        syncWithMainTabBarController()
+        
         startPlaybackTimer()
     }
+    
+    // UI만 업데이트 (재생은 유지)
+    private func updateUIForCurrentIndex() {
+        guard !musicList.playlist.isEmpty, currentIndex >= 0, currentIndex < musicList.playlist.count else { return }
+        
+        // UI 업데이트만 수행
+        titleLabel.text = musicList.playlist[currentIndex].title
+        artistLabel.text = musicList.playlist[currentIndex].artist
+        
+        // 재생 버튼 상태 업데이트 (현재 재생 상태에 따라)
+        let imageName = AudioManager.shared.isPlaying ? "pause.fill" : "play.fill"
+        playButton.setImage(UIImage(systemName: imageName), for: .normal)
+        
+        // 🔧 슬라이더 즉시 현재 위치로 동기화 (움직임 방지)
+        let currentTime = AudioManager.shared.playerCurrentTime
+        let duration = AudioManager.shared.playerDuration
+        if duration > 0 {
+            progressSlider.maximumValue = Float(duration)
+            progressSlider.setValue(Float(currentTime), animated: false)  // animated: false로 즉시 설정
+            currentTimeLabel.text = formatTime(currentTime)
+            durationLabel.text = "-" + formatTime(duration - currentTime)
+        }
+        
+        // 미니플레이어도 업데이트
+        miniPlayer?.updateNowPlaying(
+            song: musicList.playlist[currentIndex],
+            image: albumImageView.image
+        )
+        miniPlayer?.updatePlaybackState(isPlaying: AudioManager.shared.isPlaying)
+        
+        // MainTabBarController의 재생 정보도 업데이트
+        if let tabBarController = presentingViewController as? MainTabBarController {
+            tabBarController.setCurrentPlayingInfo(playlist: musicList, index: currentIndex)
+        }
+        
+        startPlaybackTimer()
+    }
+    
+    // MainTabBarController와 셔플/반복 상태 동기화
+    private func syncWithMainTabBarController() {
+        if let tabBarController = presentingViewController as? MainTabBarController {
+            tabBarController.syncPlaybackState(
+                isShuffleOn: isShuffleOn,
+                isRepeatOn: isRepeatOn,
+                shuffledIndices: shuffledIndices,
+                playHistory: playHistory,
+                originalShuffledIndices: originalShuffledIndices
+            )
+        }
+    }
+    
+    // MainTabBarController로부터 상태 가져와서 UI 업데이트
+    private func syncFromMainTabBarController() {
+        if let tabBarController = presentingViewController as? MainTabBarController {
+            let state = tabBarController.getCurrentPlaybackState()
+            
+            // 상태 동기화
+            isShuffleOn = state.isShuffleOn
+            isRepeatOn = state.isRepeatOn
+            shuffledIndices = state.shuffledIndices
+            playHistory = state.playHistory
+            originalShuffledIndices = state.originalShuffledIndices
+            
+            // 버튼 UI 업데이트
+            updateShuffleRepeatButtonsUI()
+            
+            print("풀스크린으로 상태 동기화: 셔플=\(isShuffleOn), 반복=\(isRepeatOn)")
+        }
+    }
+    
+    // 셔플/반복 버튼 UI 업데이트
+    private func updateShuffleRepeatButtonsUI() {
+        UIView.animate(withDuration: 0.2) {
+            self.shuffleButton.tintColor = self.isShuffleOn ? .white : .white.withAlphaComponent(0.4)
+            self.repeatButton.tintColor = self.isRepeatOn ? .white : .white.withAlphaComponent(0.4)
+        }
+    }
+    
     @objc private func prevTapped() {
         let currentTime = AudioManager.shared.playerCurrentTime
         if currentTime > 1.0 {
@@ -456,6 +634,35 @@ class PlayerViewController: UIViewController {
     @objc private func sliderValueChanged(_ sender: UISlider) {
         AudioManager.shared.seekTo(time: TimeInterval(sender.value))
         updatePlaybackUI()
+    }
+}
+
+// MARK: - 미니플레이어 델리게이트
+extension PlayerViewController: MiniPlayerDelegate {
+    func miniPlayerDidTap() {
+        // 미니플레이어 탭 시 풀스크린으로 전환되는 로직은 상위 뷰컨트롤러에서 처리
+        // 여기서는 단순히 알림만 전달
+    }
+    
+    func miniPlayerPlayPauseDidTap() {
+        playTapped()
+    }
+    
+    func miniPlayerDidSwipeLeft() {
+        nextTapped()
+    }
+    
+    func miniPlayerDidSwipeRight() {
+        prevTapped()
+    }
+    // MARK: - 미니플레이어 연결 설정
+    private func setupMiniPlayerConnection() {
+        if let tabBarController = presentingViewController as? MainTabBarController {
+            miniPlayer = tabBarController.getMiniPlayerVC()
+            tabBarController.getMiniPlayerVC().delegate = self
+            // 현재 재생 정보 저장
+            tabBarController.setCurrentPlayingInfo(playlist: musicList, index: currentIndex)
+        }
     }
 }
 
