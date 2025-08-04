@@ -47,18 +47,4 @@ class PlaylistManager: ObservableObject {
          playlists.append(playlist)
          NotificationCenter.default.post(name: .playlistCreated, object: nil)
      }
-    
-    /// 곡 추가
-    func addSong(_ song: Song, to playlistID: UUID) {
-        if let index = playlists.firstIndex(where: { $0.id == playlistID }) {
-            playlists[index].playlist.append(song)
-        }
-    }
-
-    /// 곡 삭제
-    func removeSong(songID: UUID, from playlistID: UUID) {
-        if let index = playlists.firstIndex(where: { $0.id == playlistID }) {
-            playlists[index].playlist.removeAll { $0.id == songID }
-        }
-    }
 }
