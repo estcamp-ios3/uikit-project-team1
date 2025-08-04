@@ -71,6 +71,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("✅ Row tapped: \(indexPath.row)")
+        tableView.deselectRow(at: indexPath, animated: true)
         playAllMusic()
     }
     
