@@ -33,7 +33,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        tabBarController.viewControllers = [tabOneNav, tabTwoNav, tabThreeNav, tabFourNav]
         tabBarController.viewControllers = [tabOneNav, tabThreeNav]
         
-        window.rootViewController = tabBarController
+        window.rootViewController = MainTabBarController()
         
         self.window = window
         window.makeKeyAndVisible()
