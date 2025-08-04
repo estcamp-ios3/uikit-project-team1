@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     private var selectedCategories: [Tags] = []
@@ -208,25 +209,39 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     }
     
     private func didTapCreate() {
+        // 플레이리스트 제목 및 커버 설정
+        guard let playlistName = nameTextField.text, !playlistName.trimmingCharacters(in: .whitespaces).isEmpty else {
+               // ⚠️ 경고창 띄우기
+               let alert = UIAlertController(title: "이름 없음", message: "플레이리스트 이름을 입력해주세요.", preferredStyle: .alert)
+               alert.addAction(UIAlertAction(title: "확인", style: .default))
+               present(alert, animated: true)
+               return
+           }
+        
         let selectedTagStrings = selectedCategories.map { $0.tags }
+        guard !selectedTagStrings.isEmpty else {
+            // ⚠️ 경고창 띄우기
+            let alert = UIAlertController(title: "태그 없음", message: "Tag를 1개 이상 선택해주세요.", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "확인", style: .default))
+            present(alert, animated: true)
+            return
+        }
+        
         
         // 태그가 겹치는 곡들 필터링
         let filteredSongs = songs.filter { song in
             !Set(song.tags).isDisjoint(with: selectedTagStrings)
         }
-        
-        // 플레이리스트 제목 및 커버 설정
-        let title = nameTextField.text ?? "이름 없는 플레이리스트"
 
         let coverImageName = selectedCategories.randomElement()?.coverImageName
         
-        let newPlaylist = Playlist(title: title, coverImageName: coverImageName, playlist: filteredSongs)
+        let newPlaylist = Playlist(title: playlistName, coverImageName: coverImageName, playlist: filteredSongs)
         
-        // 전역 변수에 추가
-        playlists.append(newPlaylist)
-        print("\n새로 생성된 플레이리스트: \n\(playlists)")
+        // 싱글톤 변수에 추가
+        PlaylistManager.shared.playlists.append(newPlaylist)
         
         NotificationCenter.default.post(name: .playlistCreated, object: nil)
+        
         // 홈으로 돌아가기
         dismiss(animated: true)
     }
