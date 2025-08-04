@@ -64,12 +64,15 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: nil)
-        let text = filteredResults[indexPath.row].title
-        cell.textLabel?.text = text
-        cell.detailTextLabel?.text = "Artist"
-        
+
+        cell.textLabel?.text = filteredResults[indexPath.row].title        
         cell.imageView?.image = UIImage(named: filteredResults[indexPath.row].coverImageName ?? "")
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        navigationController?.pushViewController(PlayerViewController(), animated: true)
     }
     
     // MARK: - SearchBar Delegate
