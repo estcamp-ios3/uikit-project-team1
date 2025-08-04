@@ -1,8 +1,8 @@
 //
 //  NationCell.swift
-//  Nataions
+//  BGMate
 //
-//  Created by Jongwook Park on 7/22/25.
+//  Created by 권태우 on 7/30/25.
 //
 
 import UIKit
