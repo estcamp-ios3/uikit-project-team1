@@ -71,8 +71,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        tableView.deselectRow(at: indexPath, animated: true)
-        navigationController?.pushViewController(PlayerViewController(), animated: true)
+        playAllMusic()
     }
     
     // MARK: - SearchBar Delegate
@@ -95,5 +94,13 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
 
     @objc func dismissKeyboard() {
         view.endEditing(true)
+    }
+    
+    @objc func playAllMusic() {
+        let playerVC = PlayerViewController()
+        playerVC.musicList = Playlist(title: "Ronaldo, the GOAT", coverImageName: "calm_cover", playlist: [songs[0], songs[1], songs[2]])
+        playerVC.currentIndex = 0
+        playerVC.modalPresentationStyle = .fullScreen
+        present(playerVC, animated: true, completion: nil)
     }
 }
