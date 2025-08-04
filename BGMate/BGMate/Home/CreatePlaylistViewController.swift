@@ -157,8 +157,8 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-//        layout.minimumLineSpacing = 10
-//        layout.minimumInteritemSpacing = 10
+//        layout.minimumLineSpacing = 10 //줄(정렬 축) 간격
+//        layout.minimumInteritemSpacing = 10  //셀(교차축) 간격
         
         let itemWidth = (UIScreen.main.bounds.width - 16 * 2 - 10 * 2) / 3 // 3열, 좌우 여백(16) 및 아이템 간 여백(10)
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth + 20) // 이미지 + 텍스트 공간
