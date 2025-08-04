@@ -7,8 +7,8 @@
 
 import Foundation
 
-struct Playlist: Identifiable {
-    let id: UUID = UUID()
+struct Playlist: Identifiable, Codable {
+    var id: UUID = UUID()
     let title: String
     let coverImageName: String?
     var playlist: [Song] // 음악 배열
