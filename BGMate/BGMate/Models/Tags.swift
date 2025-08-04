@@ -28,6 +28,7 @@ let tagList: [Tags] = [
     Tags(title: "선술집/이자카야", coverImageName: "izakaya_cover", tags: "bar"),
     Tags(title: "야외/루프탑", coverImageName: "outdoor_cover", tags: "nature"),
     Tags(title: "빈티지/로우파이", coverImageName: "lofi_cover", tags: "chillhop"),
+    Tags(title: "카페", coverImageName: "lofi_cover", tags: "cafe"),
 
     // 3. 시간대 관련
     Tags(title: "모닝BGM", coverImageName: "morning_cover", tags: "morning"),
