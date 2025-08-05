@@ -15,6 +15,8 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
     let results = PlaylistManager.shared.playlists
     var filteredResults: [Playlist] = PlaylistManager.shared.playlists
     
+    var isEditingPlaylists = false // Track edit mode
+    
     // Initialize the collection view with a flow layout
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         let layout = UICollectionViewFlowLayout()
@@ -45,7 +47,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
-
+        
         // Add right bar button item
         navigationItem.rightBarButtonItem = UIBarButtonItem(
             image: UIImage(systemName: "gear"),
@@ -135,7 +137,13 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
     }
     
     @objc func rightBarButtonTapped() {
-        print("Right bar button tapped")
+        isEditingPlaylists.toggle()
+        
+        // Change the right bar button icon
+        navigationItem.rightBarButtonItem?.image = UIImage(systemName: isEditingPlaylists ? "checkmark" : "gear")
+        
+        // Reload collection view to show/hide delete icons
+        collectionView.reloadData()
     }
 }
 
@@ -160,20 +168,27 @@ extension HomeViewController: UICollectionViewDataSource {
             let playlist = filteredResults[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
             cell.nameLabel.text = playlist.title
+            
             return cell
         }
     }
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        if indexPath.item == 0 {
-            // Show view to create a new playlist
-            self.present(CreatePlaylistViewController(), animated: true, completion: nil)
-        } else {
-            // Navigate to the music player screen with selected playlist
-            let selectedPlaylist = filteredResults[indexPath.item - 1]
-            let musicPlayerVC = MusicPlayerViewController()
-            musicPlayerVC.receiveData = selectedPlaylist
-            navigationController?.pushViewController(musicPlayerVC, animated: true)
+        if isEditingPlaylists {
+            if indexPath.item != 0 {
+                
+            }
+        } else{
+            if indexPath.item == 0 {
+                // Show view to create a new playlist
+                self.present(CreatePlaylistViewController(), animated: true, completion: nil)
+            } else {
+                // Navigate to the music player screen with selected playlist
+                let selectedPlaylist = filteredResults[indexPath.item - 1]
+                let musicPlayerVC = MusicPlayerViewController()
+                musicPlayerVC.receiveData = selectedPlaylist
+                navigationController?.pushViewController(musicPlayerVC, animated: true)
+            }
         }
     }
 }
