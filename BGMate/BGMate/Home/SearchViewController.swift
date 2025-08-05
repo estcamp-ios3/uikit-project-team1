@@ -9,6 +9,8 @@ import UIKit
 
 // View controller responsible for the Search screen
 class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
+    var songs: [Song] = []
+    var musicList = Playlist(title: "Ronaldo, the GOAT", coverImageName: "", playlist: [])
     
     // Declaration of search bar and table view
     let searchBar = UISearchBar()
@@ -66,7 +68,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
+            tableView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
     }
     
@@ -89,13 +91,14 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // Navigate to music player screen when a cell is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        var songs: [Song] = []
         for each in songs {
             if each.tags.contains(filteredResults[indexPath.row].tags) {
                 songs.append(each)
             }
         }
-        playAllMusic(coverImageName: filteredResults[indexPath.row].coverImageName ?? "", playlist: songs)
+        musicList.coverImageName = filteredResults[indexPath.row].coverImageName
+        musicList.playlist = songs
+        playAllMusic()
     }
     
     // MARK: - SearchBar Delegate
@@ -126,11 +129,9 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     // Method to present the music player screen modally
-    func playAllMusic(coverImageName: String, playlist: [Song]) {
+    @objc func playAllMusic() {
         let playerVC = PlayerViewController()
-        let playlist = Playlist(title: "Ronaldo, the GOAT", coverImageName: coverImageName, playlist: playlist)
-        
-        playerVC.musicList = playlist
+        playerVC.musicList = musicList
         playerVC.currentIndex = 0
         playerVC.modalPresentationStyle = .fullScreen
         present(playerVC, animated: true, completion: nil)
