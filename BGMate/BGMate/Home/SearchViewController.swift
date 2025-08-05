@@ -25,6 +25,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.view.backgroundColor = .systemBackground
         self.title = "SEARCH"
         
+        tableView.register(SearchResultCell.self, forCellReuseIdentifier: "SearchResultCell")
+        
         // Add tap gesture to dismiss the keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
@@ -79,21 +81,16 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return filteredResults.count
     }
     
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
+    }
+    
     // Configure cell
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "SearchResultCell")
         
         cell.textLabel?.text = filteredResults[indexPath.row].title
         cell.imageView?.image = UIImage(named: filteredResults[indexPath.row].coverImageName ?? "")
-        
-        // Set up Auto Layout constraints
-        NSLayoutConstraint.activate([
-            cell.textLabel.topAnchor.constraint(equalTo: tableView.topAnchor, constant: 5),
-            cell.leadingAnchor.constraint(equalTo: tableView.leadingAnchor),
-            cell.trailingAnchor.constraint(equalTo: tableView.trailingAnchor),
-            cell.bottomAnchor.constraint(equalTo: tableView.bottomAnchor, constant: -5)
-        ])
-        
         return cell
     }
     
