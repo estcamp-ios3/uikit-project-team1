@@ -51,6 +51,19 @@ class NationCell: UICollectionViewCell {
         
     }
     
+    func startShaking() {
+        let animation = CAKeyframeAnimation(keyPath: "transform.rotation")
+        animation.values = [-0.03, 0.03, -0.03]
+        animation.autoreverses = true
+        animation.duration = 1
+        animation.repeatCount = .infinity
+        layer.add(animation, forKey: "shaking")
+    }
+
+    func stopShaking() {
+        layer.removeAnimation(forKey: "shaking")
+    }
+    
     // Required initializer
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
