@@ -23,7 +23,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         
         // Configure cell size and spacing
         layout.itemSize = CGSize(width: 150, height: 180)
-        layout.minimumLineSpacing = 20
+        layout.minimumLineSpacing = 10
         layout.minimumInteritemSpacing = 5
         
         // Initialize collection view with layout
