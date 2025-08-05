@@ -79,7 +79,7 @@ extension HomeViewController: UICollectionViewDataSource {
         if indexPath.item == 0 {
             // First cell is the "Add" button
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AddCell", for: indexPath) as! AddCell
-            cell.nameLabel.text = "ADD"
+            cell.nameLabel.text = "ADD\nPLAYLIST"
             return cell
         } else {
             // Playlist cells
