@@ -16,7 +16,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // Full tag list and filtered results
     let results = tagList
-    var filteredResults: [Tags] = []
+    var filteredResults: [Tags] = tagList
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -89,7 +89,13 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // Navigate to music player screen when a cell is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        playAllMusic()
+        var songs: [Song] = []
+        for each in songs {
+            if each.tags.contains(filteredResults[indexPath.row].tags) {
+                songs.append(each)
+            }
+        }
+        playAllMusic(coverImageName: filteredResults[indexPath.row].coverImageName ?? "", playlist: songs)
     }
     
     // MARK: - SearchBar Delegate
@@ -98,6 +104,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.isEmpty {
             filteredResults.removeAll()
+            filteredResults = tagList
         } else {
             filteredResults = tagList.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
         }
@@ -108,6 +115,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
         searchBar.text = ""
         filteredResults.removeAll()
+        filteredResults = tagList
         tableView.reloadData()
         searchBar.resignFirstResponder()
     }
@@ -118,9 +126,11 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     }
     
     // Method to present the music player screen modally
-    @objc func playAllMusic() {
+    func playAllMusic(coverImageName: String, playlist: [Song]) {
         let playerVC = PlayerViewController()
-        playerVC.musicList = Playlist(title: "Ronaldo, the GOAT", coverImageName: "calm_cover", playlist: [songs[0], songs[1], songs[2]])
+        let playlist = Playlist(title: "Ronaldo, the GOAT", coverImageName: coverImageName, playlist: playlist)
+        
+        playerVC.musicList = playlist
         playerVC.currentIndex = 0
         playerVC.modalPresentationStyle = .fullScreen
         present(playerVC, animated: true, completion: nil)
