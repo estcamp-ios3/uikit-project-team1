@@ -100,7 +100,7 @@ extension MainTabBarController: MiniPlayerDelegate {
             playerVC.shouldRestartPlayback = false  // 재생 중인 곡을 다시 시작하지 않도록 설정
         } else {
             // 기본값 설정 (재생 정보가 없을 때)
-            playerVC.musicList = Playlist(title: "현재 재생 중", coverImageName: "calm_cover", playlist: [songs[0], songs[1], songs[2]])
+            playerVC.musicList = Playlist(title: "현재 재생 중", coverImageName: "calm_cover", selectedTag: [], playlist: [songs[0], songs[1], songs[2]])
             playerVC.currentIndex = 0
             playerVC.shouldRestartPlayback = true
         }
