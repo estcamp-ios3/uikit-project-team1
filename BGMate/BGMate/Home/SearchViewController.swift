@@ -23,14 +23,18 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.view.backgroundColor = .systemBackground
         self.title = "SEARCH"
         
-        // UI setup
-        setupSearchBar()
-        setupTableView()
-        
         // Add tap gesture to dismiss the keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
         view.addGestureRecognizer(tapGesture)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        // UI setup
+        setupSearchBar()
+        setupTableView()
     }
     
     // Configure the search bar
@@ -62,7 +66,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: MiniPlayerState.shared.sizeOfMiniBar)
+            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
     }
     
