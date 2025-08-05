@@ -15,6 +15,7 @@ class AddCell: UICollectionViewCell {
         label.textAlignment = .center
         label.textColor = .black
         label.backgroundColor = .systemGray6
+        label.numberOfLines = 2
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
