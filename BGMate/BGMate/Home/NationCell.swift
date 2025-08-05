@@ -20,6 +20,8 @@ class NationCell: UICollectionViewCell {
     let flagLabel: UIImageView = {
         let image = UIImageView()
         image.layer.cornerRadius = 8
+        image.layer.masksToBounds = true
+        image.clipsToBounds = true
         image.contentMode = .scaleAspectFit
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
