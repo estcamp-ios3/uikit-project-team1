@@ -47,8 +47,8 @@ class HomeViewController: UIViewController {
         collectionView.showsVerticalScrollIndicator = false
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 40),
-            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -40),
+            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 35),
+            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -35),
             collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
         
@@ -84,12 +84,18 @@ extension HomeViewController: UICollectionViewDataSource {
             // First cell is the "Add" button
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AddCell", for: indexPath) as! AddCell
             cell.nameLabel.text = "ADD PLAYLIST"
+            cell.nameLabel.layer.cornerRadius = 8
+            cell.nameLabel.layer.masksToBounds = true
+            cell.nameLabel.clipsToBounds = true
             return cell
         } else {
             // Playlist cells
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             let playlist = PlaylistManager.shared.playlists[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
+            cell.flagLabel.layer.cornerRadius = 8
+            cell.flagLabel.layer.masksToBounds = true
+            cell.flagLabel.clipsToBounds = true
             cell.nameLabel.text = playlist.title
             return cell
         }
