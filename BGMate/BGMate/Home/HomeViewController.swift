@@ -35,6 +35,14 @@ class HomeViewController: UIViewController {
         
         self.view.backgroundColor = .systemBackground
         self.title = "BGMate"
+
+        // Add right bar button item
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "gear"),
+            style: .plain,
+            target: self,
+            action: #selector(rightBarButtonTapped)
+        )
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -67,6 +75,10 @@ class HomeViewController: UIViewController {
     // Reload the collection view when new playlist is created
     @objc func reloadPlaylists() {
         collectionView.reloadData()
+    }
+    
+    @objc func rightBarButtonTapped() {
+        print("Right bar button tapped")
     }
 }
 
