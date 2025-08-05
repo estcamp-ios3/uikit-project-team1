@@ -11,7 +11,7 @@ class AddCell: UICollectionViewCell {
     
     let nameLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 30, weight: .medium)
+        label.font = .systemFont(ofSize: 10, weight: .medium)
         label.textAlignment = .center
         label.textColor = .black
         label.backgroundColor = .systemGray6
