@@ -8,7 +8,6 @@
 import UIKit
 
 class HomeViewController: UIViewController {
-    var sizeOfMiniBar: Double = MiniPlayerState.shared.isMiniPlayerVisible ? 36 : 0
     let collectionView: UICollectionView
     
     // Initialize the collection view with a flow layout
@@ -36,6 +35,11 @@ class HomeViewController: UIViewController {
         
         self.view.backgroundColor = .systemBackground
         self.title = "BGMate"
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
         
         // Add and layout the collection view
         self.view.addSubview(collectionView)
@@ -45,7 +49,7 @@ class HomeViewController: UIViewController {
             collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 40),
             collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -40),
-            collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: sizeOfMiniBar)
+            collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
         
         // Set delegate and data source
