@@ -133,6 +133,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
     
     // Reload the collection view when new playlist is created
     @objc func reloadPlaylists() {
+        filteredResults = PlaylistManager.shared.playlists
         collectionView.reloadData()
     }
     
