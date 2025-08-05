@@ -10,7 +10,7 @@ import Foundation
 struct Playlist: Identifiable, Codable {
     var id: UUID = UUID()
     let title: String
-    let coverImageName: String?
+    var coverImageName: String?
     var playlist: [Song] // 음악 배열
 }
 
