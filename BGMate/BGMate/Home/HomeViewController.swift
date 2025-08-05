@@ -69,40 +69,37 @@ class HomeViewController: UIViewController {
 
 extension HomeViewController: UICollectionViewDataSource {
     
-    // Total number of items (including the add button cell)
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return playlists.count + 1
+        // One extra cell for the "Add" button
+        return PlaylistManager.shared.playlists.count + 1
     }
     
-    // Configure cell for each item
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         if indexPath.item == 0 {
             // First cell is the "Add" button
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AddCell", for: indexPath) as! AddCell
-            
             cell.nameLabel.text = "ADD"
-            
             return cell
         } else {
-            // Other cells display playlist information
+            // Playlist cells
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
-            
-            cell.flagLabel.image = UIImage(named: playlists[indexPath.item - 1].coverImageName ?? "")
-            cell.nameLabel.text = playlists[indexPath.item - 1].title
-            
+            let playlist = PlaylistManager.shared.playlists[indexPath.item - 1]
+            cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
+            cell.nameLabel.text = playlist.title
             return cell
         }
     }
     
-    // Handle cell selection
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if indexPath.item == 0 {
-            // Present the create playlist view
+            // Show view to create a new playlist
             self.present(CreatePlaylistViewController(), animated: true, completion: nil)
-            
         } else {
-            // Navigate to the music player view
-            navigationController?.pushViewController(MusicPlayerViewController(), animated: true)
+            // Navigate to the music player screen with selected playlist
+            let selectedPlaylist = PlaylistManager.shared.playlists[indexPath.item - 1]
+            let musicPlayerVC = MusicPlayerViewController()
+            musicPlayerVC.receiveData = selectedPlaylist
+            navigationController?.pushViewController(musicPlayerVC, animated: true)
         }
     }
 }
