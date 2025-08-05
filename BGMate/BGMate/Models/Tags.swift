@@ -1,5 +1,5 @@
 //
-//  Category.swift
+//  Tags.swift
 //  BGMate
 //
 //  Created by catharina J on 7/29/25.
@@ -28,7 +28,7 @@ let tagList: [Tags] = [
     Tags(title: "선술집/이자카야", coverImageName: "izakaya_cover", tags: "bar"),
     Tags(title: "야외/루프탑", coverImageName: "outdoor_cover", tags: "nature"),
     Tags(title: "빈티지/로우파이", coverImageName: "lofi_cover", tags: "chillhop"),
-    Tags(title: "카페", coverImageName: "lofi_cover", tags: "cafe"),
+    Tags(title: "카페", coverImageName: "cafe_cover", tags: "cafe"),
 
     // 3. 시간대 관련
     Tags(title: "모닝BGM", coverImageName: "morning_cover", tags: "morning"),
@@ -38,8 +38,11 @@ let tagList: [Tags] = [
     Tags(title: "나이트타임BGM", coverImageName: "night_cover", tags: "sleep"),
 
     // 4. 기능/목적 관련
-    Tags(title: "집중을 돕는 음악", coverImageName: "focus_cover", tags: "study"),
-    Tags(title: "무드전환용", coverImageName: "mood_change_cover", tags: "uplifting"),
-    Tags(title: "계절별 음악", coverImageName: "seasonal_cover", tags: "seasonal"),
-    Tags(title: "브랜드 전용 플레이리스트", coverImageName: "brand_cover", tags: "brand")
+    Tags(title: "집중", coverImageName: "focus_cover", tags: "study"),
+    Tags(title: "무드전환", coverImageName: "mood_change_cover", tags: "uplifting"),
+    Tags(title: "봄", coverImageName: "spring_cover", tags: "spring"),
+    Tags(title: "여름", coverImageName: "summer_cover", tags: "summer"),
+    Tags(title: "가을", coverImageName: "autumn_cover", tags: "autumn"),
+    Tags(title: "겨울", coverImageName: "winter_cover", tags: "winter"),
+    Tags(title: "브랜드 전용", coverImageName: "brand_cover", tags: "brand")
 ]
