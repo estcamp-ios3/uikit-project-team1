@@ -84,18 +84,12 @@ extension HomeViewController: UICollectionViewDataSource {
             // First cell is the "Add" button
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AddCell", for: indexPath) as! AddCell
             cell.nameLabel.text = "ADD PLAYLIST"
-            cell.nameLabel.layer.cornerRadius = 8
-            cell.nameLabel.layer.masksToBounds = true
-            cell.nameLabel.clipsToBounds = true
             return cell
         } else {
             // Playlist cells
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
             let playlist = PlaylistManager.shared.playlists[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
-            cell.flagLabel.layer.cornerRadius = 8
-            cell.flagLabel.layer.masksToBounds = true
-            cell.flagLabel.clipsToBounds = true
             cell.nameLabel.text = playlist.title
             return cell
         }
