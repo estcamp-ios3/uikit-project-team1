@@ -10,7 +10,7 @@ import UIKit
 // View controller responsible for the Search screen
 class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
     var songs: [Song] = []
-    var musicList = Playlist(title: "Ronaldo, the GOAT", coverImageName: "", playlist: [])
+    var musicList = Playlist(title: "Ronaldo, the GOAT", coverImageName: "", selectedTag: [], playlist: [])
     
     // Declaration of search bar and table view
     let searchBar = UISearchBar()
