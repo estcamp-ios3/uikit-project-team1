@@ -19,6 +19,7 @@ class NationCell: UICollectionViewCell {
     }()
     let flagLabel: UIImageView = {
         let image = UIImageView()
+        // Apply rounded corners to the flag image view
         image.layer.cornerRadius = 8
         image.layer.masksToBounds = true
         image.clipsToBounds = true
