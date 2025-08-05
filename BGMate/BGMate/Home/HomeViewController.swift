@@ -7,8 +7,13 @@
 
 import UIKit
 
-class HomeViewController: UIViewController {
+class HomeViewController: UIViewController, UISearchBarDelegate {
     let collectionView: UICollectionView
+    // Declaration of search bar and table view
+    let searchBar = UISearchBar()
+    // Full tag list and filtered results
+    let results = PlaylistManager.shared.playlists
+    var filteredResults: [Playlist] = PlaylistManager.shared.playlists
     
     // Initialize the collection view with a flow layout
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -35,6 +40,11 @@ class HomeViewController: UIViewController {
         
         self.view.backgroundColor = .systemBackground
         self.title = "BGMate"
+        
+        // Add tap gesture to dismiss the keyboard
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
+        tapGesture.cancelsTouchesInView = false
+        view.addGestureRecognizer(tapGesture)
 
         // Add right bar button item
         navigationItem.rightBarButtonItem = UIBarButtonItem(
@@ -47,18 +57,21 @@ class HomeViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        
+        // UI setup
+        setupSearchBar()
         
         // Add and layout the collection view
         self.view.addSubview(collectionView)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         collectionView.showsVerticalScrollIndicator = false
         NSLayoutConstraint.activate([
-            collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 35),
-            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -35),
+            collectionView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
+            collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 32),
+            collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
             collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
+        
+        
         
         // Set delegate and data source
         collectionView.dataSource = self
@@ -70,6 +83,50 @@ class HomeViewController: UIViewController {
         
         // Observe notification to reload playlists
         NotificationCenter.default.addObserver(self, selector: #selector(reloadPlaylists), name: .playlistCreated, object: nil)
+    }
+    
+    // Configure the search bar
+    private func setupSearchBar() {
+        searchBar.placeholder = "Type to search..."
+        searchBar.delegate = self
+        searchBar.backgroundImage = UIImage()
+        
+        searchBar.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(searchBar)
+        
+        // Set up auto layout constraints
+        NSLayoutConstraint.activate([
+            searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+        ])
+    }
+    
+    // MARK: - SearchBar Delegate
+    
+    // Perform filtering when search text changes
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchText.isEmpty {
+            filteredResults.removeAll()
+            filteredResults = PlaylistManager.shared.playlists
+        } else {
+            filteredResults = PlaylistManager.shared.playlists.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+        }
+        collectionView.reloadData()
+    }
+    
+    // Reset state when cancel button is clicked
+    func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
+        searchBar.text = ""
+        filteredResults.removeAll()
+        filteredResults = PlaylistManager.shared.playlists
+        collectionView.reloadData()
+        searchBar.resignFirstResponder()
+    }
+    
+    // Method to dismiss the keyboard
+    @objc func dismissKeyboard() {
+        view.endEditing(true)
     }
     
     // Reload the collection view when new playlist is created
@@ -88,7 +145,7 @@ extension HomeViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         // One extra cell for the "Add" button
-        return PlaylistManager.shared.playlists.count + 1
+        return filteredResults.count + 1
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
@@ -100,7 +157,7 @@ extension HomeViewController: UICollectionViewDataSource {
         } else {
             // Playlist cells
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "NationCell", for: indexPath) as! NationCell
-            let playlist = PlaylistManager.shared.playlists[indexPath.item - 1]
+            let playlist = filteredResults[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
             cell.nameLabel.text = playlist.title
             return cell
@@ -113,7 +170,7 @@ extension HomeViewController: UICollectionViewDataSource {
             self.present(CreatePlaylistViewController(), animated: true, completion: nil)
         } else {
             // Navigate to the music player screen with selected playlist
-            let selectedPlaylist = PlaylistManager.shared.playlists[indexPath.item - 1]
+            let selectedPlaylist = filteredResults[indexPath.item - 1]
             let musicPlayerVC = MusicPlayerViewController()
             musicPlayerVC.receiveData = selectedPlaylist
             navigationController?.pushViewController(musicPlayerVC, animated: true)
