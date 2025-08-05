@@ -50,7 +50,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         
         // Add right bar button item
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "gear"),
+            image: UIImage(systemName: "minus.circle"),
             style: .plain,
             target: self,
             action: #selector(rightBarButtonTapped)
@@ -176,7 +176,21 @@ extension HomeViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         if isEditingPlaylists {
             if indexPath.item != 0 {
-                
+                let alert = UIAlertController(
+                    title: "Delete Playlist",
+                    message: "Are you sure you want to delete \"\(filteredResults[indexPath.item - 1].title)\"?",
+                    preferredStyle: .alert
+                )
+                alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler: nil))
+                alert.addAction(UIAlertAction(title: "Delete", style: .destructive, handler: { _ in
+                    // Remove from PlaylistManager's playlists
+                    if let fullIndex = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.filteredResults[indexPath.item - 1].id }) {
+                        PlaylistManager.shared.playlists.remove(at: fullIndex)
+                    }
+                    self.filteredResults.remove(at: indexPath.item - 1)
+                    collectionView.reloadData()
+                }))
+                present(alert, animated: true)
             }
         } else{
             if indexPath.item == 0 {
