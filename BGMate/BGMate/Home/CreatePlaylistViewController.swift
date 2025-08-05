@@ -31,57 +31,69 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
-    
-    private let stackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 16
-        stackView.alignment = .fill
-        stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        return stackView
-    }()
+    //
+    //    private let stackView: UIStackView = {
+    //        let stackView = UIStackView()
+    //        stackView.axis = .vertical
+    //        stackView.spacing = 16
+    //        stackView.alignment = .fill
+    //        stackView.distribution = .equalSpacing
+    //        stackView.translatesAutoresizingMaskIntoConstraints = false
+    //
+    //        return stackView
+    //    }()
     
     private let modalLabel: UILabel = {
         let label = UILabel()
         label.textColor = .black
         label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
         label.textAlignment = .center
-        label.text = "플레이리스트 추가"
+        label.text = "Playlist 생성"
         label.translatesAutoresizingMaskIntoConstraints = false
         
         return label
     }()
     
-    private let nameTextField: UITextField = {
-        let textField = UITextField()
-        textField.backgroundColor = .white
-        textField.textColor = .black
-        textField.borderStyle = .roundedRect
-        textField.attributedPlaceholder = NSAttributedString(
-            string: "플레이 리스트 이름 입력",
-            attributes: [
-                .foregroundColor: UIColor.darkGray,
-                .font: UIFont.systemFont(ofSize: 16, weight: .medium)
-            ]
-        )
+    private let infoLabel: UILabel = {
+        let label = UILabel()
+        label.textColor = .black
+        label.font = UIFont.systemFont(ofSize: 16)
+        label.textAlignment = .left
+        label.text = "Playlist에 추가할 Tag를 선택해주세요."
+        label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
+        label.translatesAutoresizingMaskIntoConstraints = false
         
-        textField.translatesAutoresizingMaskIntoConstraints = false
-        
-        return textField
+        return label
     }()
     
-    private let vStackView: UIStackView = {
-        let stackView = UIStackView()
-        stackView.axis = .vertical
-        stackView.spacing = 6
-        stackView.alignment = .fill
-        stackView.distribution = .equalSpacing
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        
-        return stackView
-    }()
+    //    private let nameTextField: UITextField = {
+    //        let textField = UITextField()
+    //        textField.backgroundColor = .white
+    //        textField.textColor = .black
+    //        textField.borderStyle = .roundedRect
+    //        textField.attributedPlaceholder = NSAttributedString(
+    //            string: "플레이 리스트 이름 입력",
+    //            attributes: [
+    //                .foregroundColor: UIColor.darkGray,
+    //                .font: UIFont.systemFont(ofSize: 16, weight: .medium)
+    //            ]
+    //        )
+    //
+    //        textField.translatesAutoresizingMaskIntoConstraints = false
+    //
+    //        return textField
+    //    }()
+    //
+    //    private let vStackView: UIStackView = {
+    //        let stackView = UIStackView()
+    //        stackView.axis = .vertical
+    //        stackView.spacing = 6
+    //        stackView.alignment = .fill
+    //        stackView.distribution = .equalSpacing
+    //        stackView.translatesAutoresizingMaskIntoConstraints = false
+    //
+    //        return stackView
+    //    }()
     
     private let createButton: UIButton = {
         var config = UIButton.Configuration.filled()
@@ -97,21 +109,23 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
-        
+
         setLayout()
-        
         setupCollectionView()
     }
+
+    
     
     // MARK: - Layout
     private func setLayout() {
-        view.addSubview(stackView)
+        //        view.addSubview(stackView)
         view.addSubview(closeButton)
-    
-        view.addSubview(modalLabel)
         
-        stackView.addArrangedSubview(nameTextField)
-        stackView.addArrangedSubview(vStackView)
+        view.addSubview(modalLabel)
+        view.addSubview(infoLabel)
+        
+        //        stackView.addArrangedSubview(nameTextField)
+        //        stackView.addArrangedSubview(vStackView)
         
         view.addSubview(createButton)
         
@@ -126,17 +140,21 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             modalLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
             modalLabel.widthAnchor.constraint(equalTo: safeArea.widthAnchor, multiplier: 1, constant: -32),
             
-            stackView.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 30),
-            stackView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
-            stackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
-            stackView.widthAnchor.constraint(equalTo:safeArea.widthAnchor, multiplier: 1, constant: -32),
-            stackView.bottomAnchor.constraint(equalTo: createButton.topAnchor, constant: -20),
+            infoLabel.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 32),
+            infoLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+            infoLabel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
             
-           
-            nameTextField.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            nameTextField.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            nameTextField.widthAnchor.constraint(equalTo: stackView.widthAnchor, multiplier: 1),
-            nameTextField.heightAnchor.constraint(equalToConstant: 44),
+            //            stackView.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 30),
+            //            stackView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+            //            stackView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
+            //            stackView.widthAnchor.constraint(equalTo:safeArea.widthAnchor, multiplier: 1, constant: -32),
+            //            stackView.bottomAnchor.constraint(equalTo: createButton.topAnchor, constant: -20),
+            
+            
+            //            nameTextField.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+            //            nameTextField.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
+            //            nameTextField.widthAnchor.constraint(equalTo: stackView.widthAnchor, multiplier: 1),
+            //            nameTextField.heightAnchor.constraint(equalToConstant: 44),
             
             createButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             createButton.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -20),
@@ -157,8 +175,8 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     private func setupCollectionView() {
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-//        layout.minimumLineSpacing = 10 //줄(정렬 축) 간격
-//        layout.minimumInteritemSpacing = 10  //셀(교차축) 간격
+        //        layout.minimumLineSpacing = 10 //줄(정렬 축) 간격
+        //        layout.minimumInteritemSpacing = 10  //셀(교차축) 간격
         
         let itemWidth = (UIScreen.main.bounds.width - 16 * 2 - 10 * 2) / 3 // 3열, 좌우 여백(16) 및 아이템 간 여백(10)
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth + 20) // 이미지 + 텍스트 공간
@@ -171,12 +189,15 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         collectionView.backgroundColor = .clear
         collectionView.allowsMultipleSelection = true
         
-        stackView.addArrangedSubview(collectionView)
+        //        stackView.addArrangedSubview(collectionView)
+        view.addSubview(collectionView)
         
+        let safeArea = view.safeAreaLayoutGuide
         NSLayoutConstraint.activate([
-            collectionView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-            collectionView.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 20),
+            collectionView.topAnchor.constraint(equalTo: infoLabel.bottomAnchor, constant: 16),
+            collectionView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+            collectionView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
+            collectionView.bottomAnchor.constraint(equalTo: createButton.topAnchor, constant: -10)
         ])
     }
     
@@ -197,12 +218,12 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let selectedTag = tagList[indexPath.item]
         selectedCategories.append(selectedTag)
-        print("Selected Tags: \(selectedTag.title)")
+        print("Selected Tags: \(selectedTag.tags)")
     }
     
     // 아이템 선택 해제시 동작
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-       
+        
         let deselectedTag = tagList[indexPath.item]
         selectedCategories.removeAll { $0.id == deselectedTag.id }
         print("해제된 태그: \(deselectedTag.tags)")
@@ -210,14 +231,14 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     
     private func didTapCreate() {
         // 플레이리스트 제목 및 커버 설정
-        guard let playlistName = nameTextField.text, !playlistName.trimmingCharacters(in: .whitespaces).isEmpty else {
-               // ⚠️ 경고창 띄우기
-               let alert = UIAlertController(title: "이름 없음", message: "플레이리스트 이름을 입력해주세요.", preferredStyle: .alert)
-               alert.addAction(UIAlertAction(title: "확인", style: .default))
-               present(alert, animated: true)
-               return
-           }
-        
+        //        guard let playlistName = nameTextField.text, !playlistName.trimmingCharacters(in: .whitespaces).isEmpty else {
+        //               // ⚠️ 경고창 띄우기
+        //               let alert = UIAlertController(title: "이름 없음", message: "플레이리스트 이름을 입력해주세요.", preferredStyle: .alert)
+        //               alert.addAction(UIAlertAction(title: "확인", style: .default))
+        //               present(alert, animated: true)
+        //               return
+        //           }
+        //
         let selectedTagStrings = selectedCategories.map { $0.tags }
         guard !selectedTagStrings.isEmpty else {
             // ⚠️ 경고창 띄우기
@@ -227,15 +248,25 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             return
         }
         
+        // 플리 제목 자동생성 (title 기반)
+        let selectedTitles = selectedCategories.map { $0.title }
+        let playlistName: String
+        if selectedTitles.count == 1 {
+            playlistName = selectedTitles[0]
+        } else if selectedTitles.count < 2 {
+            playlistName = selectedTitles.joined(separator: ", ")
+        } else {
+            playlistName = "\(selectedTitles[0]) 외 \(selectedTitles.count - 1)건"
+        }
         
         // 태그가 겹치는 곡들 필터링
         let filteredSongs = songs.filter { song in
             !Set(song.tags).isDisjoint(with: selectedTagStrings)
         }
-
+        
         let coverImageName = selectedCategories.randomElement()?.coverImageName
         
-        let newPlaylist = Playlist(title: playlistName, coverImageName: coverImageName, playlist: filteredSongs)
+        let newPlaylist = Playlist(title: playlistName, coverImageName: coverImageName, selectedTag: selectedTitles, playlist: filteredSongs )
         
         // 싱글톤 변수에 추가
         PlaylistManager.shared.playlists.append(newPlaylist)
