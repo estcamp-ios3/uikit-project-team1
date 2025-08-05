@@ -50,7 +50,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         
         // Add right bar button item
         navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "minus.circle"),
+            title: "Edit",
             style: .plain,
             target: self,
             action: #selector(rightBarButtonTapped)
@@ -140,7 +140,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         isEditingPlaylists.toggle()
         
         // Change the right bar button icon
-        navigationItem.rightBarButtonItem?.image = UIImage(systemName: isEditingPlaylists ? "checkmark" : "minus.circle")
+        navigationItem.rightBarButtonItem?.title = isEditingPlaylists ? "Done" : "Edit"
         
         // Reload collection view to show/hide delete icons
         collectionView.reloadData()
@@ -168,6 +168,12 @@ extension HomeViewController: UICollectionViewDataSource {
             let playlist = filteredResults[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
             cell.nameLabel.text = playlist.title
+            
+            if isEditingPlaylists {
+                cell.startShaking()
+            } else {
+                cell.stopShaking()
+            }
             
             return cell
         }
