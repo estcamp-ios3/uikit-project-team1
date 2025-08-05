@@ -10,5 +10,4 @@ class MiniPlayerState {
     private init() {}
 
     var isMiniPlayerVisible: Bool = false
-    var sizeOfMiniBar: Double = isMiniPlayerVisible ? 36 : 0
 }
