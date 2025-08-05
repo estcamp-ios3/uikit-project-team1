@@ -243,6 +243,7 @@ class PlayerViewController: UIViewController {
             image: albumImageView.image
         )
         miniPlayer?.updatePlaybackState(isPlaying: AudioManager.shared.isPlaying)
+        MiniPlayerState.shared.isMiniPlayerVisible = true
         miniPlayer?.show()
         
         // 델리게이트를 MainTabBarController로 다시 설정 & 현재 재생 정보 저장
