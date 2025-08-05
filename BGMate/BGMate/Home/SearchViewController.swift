@@ -81,10 +81,6 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         return filteredResults.count
     }
     
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 60
-    }
-    
     // Configure cell
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .default, reuseIdentifier: "SearchResultCell")
