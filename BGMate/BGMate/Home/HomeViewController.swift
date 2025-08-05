@@ -8,7 +8,7 @@
 import UIKit
 
 class HomeViewController: UIViewController {
-    
+    lazy var sizeOfMiniBar: Double = MiniPlayerState.shared.isMiniPlayerVisible ? 36 : 0
     let collectionView: UICollectionView
     
     // Initialize the collection view with a flow layout
@@ -45,7 +45,7 @@ class HomeViewController: UIViewController {
             collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 40),
             collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -40),
-            collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor)
+            collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: sizeOfMiniBar)
         ])
         
         // Set delegate and data source
@@ -79,7 +79,7 @@ extension HomeViewController: UICollectionViewDataSource {
         if indexPath.item == 0 {
             // First cell is the "Add" button
             let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "AddCell", for: indexPath) as! AddCell
-            cell.nameLabel.text = "ADD\nPLAYLIST"
+            cell.nameLabel.text = "ADD PLAYLIST"
             return cell
         } else {
             // Playlist cells
