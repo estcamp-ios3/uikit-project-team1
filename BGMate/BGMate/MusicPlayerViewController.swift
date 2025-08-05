@@ -41,8 +41,10 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         view.backgroundColor = .white
         setupUI()
         updateUI()
-    }
     
+    tableView.rowHeight = UITableView.automaticDimension
+          tableView.estimatedRowHeight = 50
+      }
     // MARK: - UI 구성
     func setupUI() {
         // 앨범 이미지
@@ -111,7 +113,8 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
             tableView.topAnchor.constraint(equalTo: addTrackButton.bottomAnchor, constant: 15),
             tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 12),
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -12),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor,
+            constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
     }
     // MARK: - UI 업데이트
@@ -128,25 +131,31 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         playerVC.modalPresentationStyle = .fullScreen
         present(playerVC, animated: true, completion: nil)
     }
-    
-    //MARK: - 곡추가 버튼 동작
+    // MARK: - 곡추가 버튼 동작
     @objc func openTrackPicker() {
         let pickerVC = TrackPickerViewController()
-        if let sheet = pickerVC.sheetPresentationController {
+        let navController = UINavigationController(rootViewController: pickerVC) // 버튼 포함 위해 네비게이션
+        
+        if let sheet = navController.sheetPresentationController {
             sheet.detents = [.medium(), .large()]
             sheet.prefersGrabberVisible = true
         }
         
-        pickerVC.onTrackSelected = { [weak self] (newSong: Song) in
+        pickerVC.onTracksSelected = { [weak self] (newSongs: [Song]) in
             guard let self = self else { return }
-            self.musicList.playlist.append(newSong)
-            // ✅ PlaylistManager 업데이트
+            
+            // ✅ 다중 곡 추가
+            self.musicList.playlist.append(contentsOf: newSongs)
+            
+            // PlaylistManager에 반영
             if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
                 PlaylistManager.shared.playlists[index] = self.musicList
             }
+            
             self.tableView.reloadData()
         }
-        present(pickerVC, animated: true, completion: nil)
+        
+        present(navController, animated: true, completion: nil)
     }
     //    // MARK: - 특정 인덱스 음악 재생
     //    func playMusic(at index: Int) {
@@ -178,6 +187,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     // MARK: - 테이블뷰 DataSource
+  
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return musicList.playlist.count
         
@@ -186,7 +196,13 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MusicCell", for: indexPath)
         let song = musicList.playlist[indexPath.row]
-        cell.textLabel?.text = "\(song.title) - \(song.artist)"
+
+        var content = cell.defaultContentConfiguration()
+        content.text = "\(song.title) - \(song.artist)"
+        content.textProperties.numberOfLines = 1
+        content.textProperties.lineBreakMode = .byTruncatingTail
+        cell.contentConfiguration = content
+
         return cell
     }
     
