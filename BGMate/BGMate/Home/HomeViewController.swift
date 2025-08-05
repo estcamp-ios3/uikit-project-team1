@@ -8,7 +8,7 @@
 import UIKit
 
 class HomeViewController: UIViewController {
-    lazy var sizeOfMiniBar: Double = MiniPlayerState.shared.isMiniPlayerVisible ? 36 : 0
+    var sizeOfMiniBar: Double = MiniPlayerState.shared.isMiniPlayerVisible ? 36 : 0
     let collectionView: UICollectionView
     
     // Initialize the collection view with a flow layout
