@@ -37,8 +37,6 @@ class SearchResultCell: UITableViewCell {
         NSLayoutConstraint.activate([
             coverImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
             coverImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            coverImageView.widthAnchor.constraint(equalToConstant: 30),
-            coverImageView.heightAnchor.constraint(equalToConstant: 30),
             
             titleLabel.leadingAnchor.constraint(equalTo: coverImageView.trailingAnchor, constant: 10),
             titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -5),
