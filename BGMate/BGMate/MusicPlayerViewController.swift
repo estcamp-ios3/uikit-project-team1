@@ -26,7 +26,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     var nowPlayingIndex: Int? = nil
     
     // 고정된 mp3 파일 목록 (파일명, 표시 텍스트, 아티스트)
-    var musicList: Playlist = Playlist(title: "", coverImageName: nil, playlist: [])
+    var musicList: Playlist = Playlist(title: "", coverImageName: nil, selectedTag: [], playlist: [])
    
     // MARK: - UI 구성 요소
     let imageView = UIImageView()
