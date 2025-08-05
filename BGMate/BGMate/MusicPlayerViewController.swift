@@ -8,24 +8,25 @@
 import UIKit
 import AVFoundation
 
-// 전역 기본 플레이리스트
-let defaultPlaylist = Playlist(
-    title: "Ronaldo, the GOAT",
-    coverImageName: "calm_cover",
-    playlist: [songs[0], songs[1], songs[2]]
-)
-
 
 class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, AVAudioPlayerDelegate {
     
-    
+    var receiveData: Playlist? {
+    didSet {
+        if let playlist = receiveData {
+        self.musicList = playlist
+        self.tableView.reloadData()
+        self.updateUI()
+        }
+    }
+}
     
     // MARK: - 음악 플레이어 관련 변수
     var player: AVAudioPlayer?
     var nowPlayingIndex: Int? = nil
     
     // 고정된 mp3 파일 목록 (파일명, 표시 텍스트, 아티스트)
-    var musicList: Playlist = PlaylistStorage.shared.load() ?? defaultPlaylist
+    var musicList: Playlist = Playlist(title: "", coverImageName: nil, playlist: [])
    
     // MARK: - UI 구성 요소
     let imageView = UIImageView()
@@ -138,11 +139,11 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         
         pickerVC.onTrackSelected = { [weak self] (newSong: Song) in
             guard let self = self else { return }
-            self.musicList = Playlist(title: self.musicList.title,
-                                      coverImageName: self.musicList.coverImageName,
-                                      playlist: self.musicList.playlist + [newSong])
-            // ✅ UserDefaults에 저장
-                    PlaylistStorage.shared.save(self.musicList)
+            self.musicList.playlist.append(newSong)
+            // ✅ PlaylistManager 업데이트
+            if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
+                PlaylistManager.shared.playlists[index] = self.musicList
+            }
             self.tableView.reloadData()
         }
         present(pickerVC, animated: true, completion: nil)
@@ -189,22 +190,27 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         return cell
     }
     
-    // MARK: - 스와이프 삭제 기능
-    func tableView(_ tableView: UITableView,
-                   commit editingStyle: UITableViewCell.EditingStyle,
-                   forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            musicList.playlist.remove(at: indexPath.row)
-            PlaylistStorage.shared.save(musicList) // ✅ 저장
-            tableView.deleteRows(at: [indexPath], with: .automatic)
-        }
-    }
-    
-    func tableView(_ tableView: UITableView,
-                   titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
-        return "곡 삭제"
-    }
-    // MARK: - 테이블뷰 Delegate
+    // MARK: - 곡 삭제
+       func tableView(_ tableView: UITableView,
+                      commit editingStyle: UITableViewCell.EditingStyle,
+                      forRowAt indexPath: IndexPath) {
+           if editingStyle == .delete {
+               musicList.playlist.remove(at: indexPath.row)
+               
+               // ✅ PlaylistManager 업데이트
+               if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
+                   PlaylistManager.shared.playlists[index] = self.musicList
+               }
+               
+               tableView.deleteRows(at: [indexPath], with: .automatic)
+           }
+       }
+       
+       func tableView(_ tableView: UITableView,
+                      titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
+           return "곡 삭제"
+           
+       }    // MARK: - 테이블뷰 Delegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // 아무 동작도 하지 않음 (개별 곡 선택 시 재생 제거)
         tableView.deselectRow(at: indexPath, animated: true)
