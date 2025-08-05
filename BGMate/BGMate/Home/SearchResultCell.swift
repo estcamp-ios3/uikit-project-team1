@@ -10,12 +10,14 @@ import UIKit
 class SearchResultCell: UITableViewCell {
     
     let coverImageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFill
-        imageView.layer.cornerRadius = 8
-        imageView.clipsToBounds = true
-        return imageView
+        let image = UIImageView()
+        // Apply rounded corners to the flag image view
+        image.layer.cornerRadius = 8
+        image.layer.masksToBounds = true
+        image.clipsToBounds = true
+        image.contentMode = .scaleAspectFit
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
     }()
     
     let titleLabel: UILabel = {
@@ -31,14 +33,15 @@ class SearchResultCell: UITableViewCell {
         contentView.addSubview(coverImageView)
         contentView.addSubview(titleLabel)
         
+        // Set up Auto Layout constraints
         NSLayoutConstraint.activate([
-            coverImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
+            coverImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
             coverImageView.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            coverImageView.widthAnchor.constraint(equalToConstant: 50),
-            coverImageView.heightAnchor.constraint(equalToConstant: 50),
+            coverImageView.widthAnchor.constraint(equalToConstant: 30),
+            coverImageView.heightAnchor.constraint(equalToConstant: 30),
             
-            titleLabel.leadingAnchor.constraint(equalTo: coverImageView.trailingAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            titleLabel.leadingAnchor.constraint(equalTo: coverImageView.trailingAnchor, constant: 10),
+            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -5),
             titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
         ])
     }
