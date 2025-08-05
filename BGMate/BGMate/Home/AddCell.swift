@@ -16,6 +16,9 @@ class AddCell: UICollectionViewCell {
         label.textColor = .black
         label.backgroundColor = .systemGray6
         label.numberOfLines = 2
+        label.layer.cornerRadius = 8
+        label.layer.masksToBounds = true
+        label.clipsToBounds = true
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
