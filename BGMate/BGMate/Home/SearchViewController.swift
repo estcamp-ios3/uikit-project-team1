@@ -25,6 +25,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         self.view.backgroundColor = .systemBackground
         self.title = "SEARCH"
         
+        tableView.register(SearchResultCell.self, forCellReuseIdentifier: "SearchResultCell")
+        
         // Add tap gesture to dismiss the keyboard
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
         tapGesture.cancelsTouchesInView = false
@@ -66,8 +68,8 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         // Set up auto layout constraints
         NSLayoutConstraint.activate([
             tableView.topAnchor.constraint(equalTo: searchBar.bottomAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            tableView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
+            tableView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
     }
@@ -81,7 +83,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     
     // Configure cell
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .default, reuseIdentifier: nil)
+        let cell = UITableViewCell(style: .default, reuseIdentifier: "SearchResultCell")
         
         cell.textLabel?.text = filteredResults[indexPath.row].title
         cell.imageView?.image = UIImage(named: filteredResults[indexPath.row].coverImageName ?? "")
