@@ -140,7 +140,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         isEditingPlaylists.toggle()
         
         // Change the right bar button icon
-        navigationItem.rightBarButtonItem?.image = UIImage(systemName: isEditingPlaylists ? "checkmark" : "gear")
+        navigationItem.rightBarButtonItem?.image = UIImage(systemName: isEditingPlaylists ? "checkmark" : "minus.circle")
         
         // Reload collection view to show/hide delete icons
         collectionView.reloadData()
