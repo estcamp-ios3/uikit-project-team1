@@ -40,6 +40,7 @@ class HomeViewController: UIViewController {
         // Add and layout the collection view
         self.view.addSubview(collectionView)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
+        collectionView.showsVerticalScrollIndicator = false
         NSLayoutConstraint.activate([
             collectionView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
             collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor, constant: 40),
