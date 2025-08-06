@@ -139,7 +139,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
         let playerVC = PlayerViewController()
         playerVC.musicList = musicList
         playerVC.currentIndex = 0
-        playerVC.modalPresentationStyle = .fullScreen
+        playerVC.modalPresentationStyle = .overFullScreen
         present(playerVC, animated: true, completion: nil)
     }
 }
