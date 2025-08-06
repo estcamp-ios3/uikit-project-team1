@@ -110,7 +110,6 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            searchBar.heightAnchor.constraint(equalToConstant: isSearchBarHidden ? 0 : 56)
         ])
     }
     
@@ -162,8 +161,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         
         // Change the right bar button icon
         navigationItem.leftBarButtonItem?.image = isSearchBarHidden ? UIImage(systemName: "magnifyingglass") : UIImage(systemName: "multiply")
-        
-        setupSearchBar()
+        searchBar.isHidden = isSearchBarHidden
     }
 }
 
@@ -194,14 +192,14 @@ extension HomeViewController: UICollectionViewDataSource {
                 deleteIcon.tintColor = .red
                 deleteIcon.translatesAutoresizingMaskIntoConstraints = false
                 cell.contentView.addSubview(deleteIcon)
-
+                
                 NSLayoutConstraint.activate([
                     deleteIcon.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 4),
                     deleteIcon.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 4),
                     deleteIcon.widthAnchor.constraint(equalToConstant: 25),
                     deleteIcon.heightAnchor.constraint(equalToConstant: 25)
                 ])
-
+                
                 cell.startShaking()
             } else {
                 // Remove delete icon if it exists
