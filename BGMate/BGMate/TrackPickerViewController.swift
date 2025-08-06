@@ -35,6 +35,7 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.addSubview(confirmButton)
         view.backgroundColor = .systemBackground
         title = "곡 추가"
     
@@ -55,11 +56,7 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TrackCell")
         view.addSubview(tableView)
-        
-        // ✅ 하단 버튼 추가
-        confirmButton.addTarget(self, action: #selector(doneSelecting), for: .touchUpInside)
-        view.addSubview(confirmButton)
-        
+                
         NSLayoutConstraint.activate([
             confirmButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             confirmButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
@@ -71,6 +68,22 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: confirmButton.topAnchor, constant: -12)
         ])
+        
+        // Add right bar button item
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "multiply.circle.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(didTapClose)
+        )
+
+        // ✅ 하단 버튼 추가
+        confirmButton.addTarget(self, action: #selector(doneSelecting), for: .touchUpInside)
+    }
+    
+    //MARK: - close
+    @objc func didTapClose() {
+        self.dismiss(animated: true, completion: nil)
     }
     
     @objc func doneSelecting() {

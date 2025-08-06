@@ -60,7 +60,6 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     func setupUI() {
         // 앨범 이미지
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.image = UIImage(named: "japanese") // 프로젝트에 있는 이미지 이름으로 변경
         imageView.contentMode = .scaleAspectFill
         imageView.layer.cornerRadius = 8
         imageView.clipsToBounds = true
@@ -68,16 +67,17 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         
         // 제목
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        titleLabel.text = "오후 일식"
         titleLabel.font = .systemFont(ofSize: 40, weight: .semibold)
         view.addSubview(titleLabel)
         
         // + 곡추가 (기능 없음 - 비활성)
         addTrackButton.translatesAutoresizingMaskIntoConstraints = false
         addTrackButton.setTitle("+ 곡추가", for: .normal)
-        addTrackButton.setTitleColor(.white, for: .normal)
-        addTrackButton.backgroundColor = UIColor.systemGray
+        addTrackButton.setTitleColor(.black, for: .normal)
+        addTrackButton.backgroundColor = .white
         addTrackButton.layer.cornerRadius = 8
+        addTrackButton.layer.borderWidth = 2
+        addTrackButton.layer.borderColor = UIColor.systemGray.cgColor
         addTrackButton.titleLabel?.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         addTrackButton.addTarget(self, action: #selector(openTrackPicker), for: .touchUpInside)
         view.addSubview(addTrackButton)
