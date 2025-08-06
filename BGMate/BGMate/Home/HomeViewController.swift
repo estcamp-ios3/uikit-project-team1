@@ -16,13 +16,14 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
     var filteredResults: [Playlist] = PlaylistManager.shared.playlists
     
     var isEditingPlaylists = false // Track edit mode
+    var isSearchBarHidden = true
     
     // Initialize the collection view with a flow layout
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
         let layout = UICollectionViewFlowLayout()
         
         // Configure cell size and spacing
-        layout.itemSize = CGSize(width: 150, height: 180)
+        layout.itemSize = CGSize(width: 150, height: 210)
         layout.minimumLineSpacing = 10
         layout.minimumInteritemSpacing = 5
         
@@ -54,6 +55,13 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
             style: .plain,
             target: self,
             action: #selector(rightBarButtonTapped)
+        )
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "magnifyingglass"),
+            style: .plain,
+            target: self,
+            action: #selector(leftBarButtonTapped)
         )
     }
     
@@ -92,6 +100,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         searchBar.placeholder = "Type to search..."
         searchBar.delegate = self
         searchBar.backgroundImage = UIImage()
+        searchBar.isHidden = isSearchBarHidden
         
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchBar)
@@ -100,7 +109,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
         ])
     }
     
@@ -146,6 +155,14 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         // Reload collection view to show/hide delete icons
         collectionView.reloadData()
     }
+    
+    @objc func leftBarButtonTapped() {
+        isSearchBarHidden.toggle()
+        
+        // Change the right bar button icon
+        navigationItem.leftBarButtonItem?.image = isSearchBarHidden ? UIImage(systemName: "magnifyingglass") : UIImage(systemName: "multiply")
+        searchBar.isHidden = isSearchBarHidden
+    }
 }
 
 
@@ -169,20 +186,32 @@ extension HomeViewController: UICollectionViewDataSource {
             let playlist = filteredResults[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
             cell.nameLabel.text = playlist.title
+            cell.tagsLabel.text = {
+                switch playlist.selectedTag.count {
+                case 0:
+                    return ""
+                case 1:
+                    return playlist.selectedTag[0]
+                case 2:
+                    return "\(playlist.selectedTag[0]), \(playlist.selectedTag[1])"
+                default:
+                    return "\(playlist.selectedTag[0]), \(playlist.selectedTag[1]) and \(playlist.selectedTag.count - 2) more tags"
+                }
+            }()
             
             if isEditingPlaylists {
                 let deleteIcon = UIImageView(image: UIImage(systemName: "minus.circle.fill"))
                 deleteIcon.tintColor = .red
                 deleteIcon.translatesAutoresizingMaskIntoConstraints = false
                 cell.contentView.addSubview(deleteIcon)
-
+                
                 NSLayoutConstraint.activate([
                     deleteIcon.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 4),
                     deleteIcon.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 4),
                     deleteIcon.widthAnchor.constraint(equalToConstant: 25),
                     deleteIcon.heightAnchor.constraint(equalToConstant: 25)
                 ])
-
+                
                 cell.startShaking()
             } else {
                 // Remove delete icon if it exists

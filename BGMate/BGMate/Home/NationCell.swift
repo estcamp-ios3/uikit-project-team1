@@ -12,7 +12,15 @@ class NationCell: UICollectionViewCell {
     let nameLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15, weight: .medium)
-        label.textAlignment = .center
+        label.textAlignment = .left
+        label.textColor = .black
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+    let tagsLabel: UILabel = {
+        let label = UILabel()
+        label.font = .systemFont(ofSize: 10, weight: .light)
+        label.textAlignment = .left
         label.textColor = .black
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
@@ -35,6 +43,7 @@ class NationCell: UICollectionViewCell {
         self.backgroundColor = backgroundColor
         self.contentView.addSubview(flagLabel)
         self.contentView.addSubview(nameLabel)
+        self.contentView.addSubview(tagsLabel)
         
         // Set up Auto Layout constraints
         NSLayoutConstraint.activate([
@@ -46,7 +55,11 @@ class NationCell: UICollectionViewCell {
             nameLabel.topAnchor.constraint(equalTo: flagLabel.bottomAnchor, constant: 5),
             nameLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
             nameLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -5),
-            nameLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -5)
+            
+            tagsLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 5),
+            tagsLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
+            tagsLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -5),
+            tagsLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -5)
         ])
         
     }
