@@ -24,7 +24,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 //        tabTwoNav.tabBarItem = UITabBarItem(title: "Tab02", image: UIImage(systemName: "map.fill"), tag: 1)
       
         let tabThreeNav = UINavigationController(rootViewController: SearchViewController())  // 검색
-        tabThreeNav.tabBarItem = UITabBarItem(title: "SEARCH", image: UIImage(systemName: "magnifyingglass"), tag: 2)
+        tabThreeNav.tabBarItem = UITabBarItem(title: "LIBRARY", image: UIImage(systemName: "square.stack"), tag: 2)
 //
 //        let tabFourNav = UINavigationController(rootViewController: CreatePlaylistViewController())  //프로필
 //        tabFourNav.tabBarItem = UITabBarItem(title: "Tab04", image: UIImage(systemName: "map"), tag: 3)
