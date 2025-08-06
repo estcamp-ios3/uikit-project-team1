@@ -32,34 +32,12 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
             button.translatesAutoresizingMaskIntoConstraints = false
             return button
         }()
-    // 닫기 버튼
-    private let closeButton: UIButton = {
-        let config = UIButton.Configuration.plain() // 기본 스타일
-        var updated = config
-        
-        updated.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
-        updated.background.backgroundColor = .systemGray5
-        updated.background.cornerRadius = 12 + 4 * 2 / 2 // (icon + padding) / 2 to keep circle shape
-        updated.background.strokeWidth = 0
-        updated.imagePadding = 0
-        
-        let button = UIButton(configuration: updated, primaryAction: nil)
-        let icon = UIImage(
-            systemName: "xmark",
-            withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)
-        )
-        button.setImage(icon, for: .normal)
-        button.tintColor = .systemGray
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
-    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(confirmButton)
         view.backgroundColor = .systemBackground
         title = "곡 추가"
-        view.addSubview(closeButton)
     
         // ✅ 기존 곡들의 fileName 기준으로 중복 필터링
         var existingFileNames = Set(existingTracks.map { $0.fileName })
@@ -78,15 +56,8 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
         tableView.dataSource = self
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: "TrackCell")
         view.addSubview(tableView)
-        
-        
-        
+                
         NSLayoutConstraint.activate([
-            closeButton.topAnchor.constraint(equalTo: view.topAnchor, constant: 16),
-            closeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
-            closeButton.widthAnchor.constraint(equalToConstant: 30),
-            closeButton.heightAnchor.constraint(equalToConstant: 30),
-            
             confirmButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
             confirmButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
             confirmButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -12),
@@ -97,12 +68,17 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
             tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             tableView.bottomAnchor.constraint(equalTo: confirmButton.topAnchor, constant: -12)
         ])
+        
+        // Add right bar button item
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "multiply.circle.fill"),
+            style: .plain,
+            target: self,
+            action: #selector(didTapClose)
+        )
+
         // ✅ 하단 버튼 추가
         confirmButton.addTarget(self, action: #selector(doneSelecting), for: .touchUpInside)
-        closeButton.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
-
-        // ✅ 테이블뷰 위에 closeButton 올리기 (터치 가능하게)
-        view.bringSubviewToFront(closeButton)
     }
     
     //MARK: - close
