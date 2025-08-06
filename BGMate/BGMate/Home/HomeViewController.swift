@@ -186,7 +186,18 @@ extension HomeViewController: UICollectionViewDataSource {
             let playlist = filteredResults[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
             cell.nameLabel.text = playlist.title
-            cell.tagsLabel.text = playlist.selectedTag.count == 1 ? "\(playlist.selectedTag[0])" : "\(playlist.selectedTag[0]) and \(playlist.selectedTag.count - 1) more tags"
+            cell.tagsLabel.text = {
+                switch playlist.selectedTag.count {
+                case 0:
+                    return ""
+                case 1:
+                    return playlist.selectedTag[0]
+                case 2:
+                    return "\(playlist.selectedTag[0]), \(playlist.selectedTag[1])"
+                default:
+                    return "\(playlist.selectedTag[0]), \(playlist.selectedTag[1]) and \(playlist.selectedTag.count - 2) more tags"
+                }
+            }()
             
             if isEditingPlaylists {
                 let deleteIcon = UIImageView(image: UIImage(systemName: "minus.circle.fill"))
