@@ -45,6 +45,17 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     tableView.rowHeight = UITableView.automaticDimension
           tableView.estimatedRowHeight = 50
       }
+    
+    /// ✅ 화면에 진입할 때마다 최신 PlaylistManager 데이터를 불러오기
+        override func viewWillAppear(_ animated: Bool) {
+            super.viewWillAppear(animated)
+            
+            if let updatedPlaylist = PlaylistManager.shared.playlists.first(where: { $0.id == self.musicList.id }) {
+                self.musicList = updatedPlaylist
+                self.tableView.reloadData()
+                self.updateUI()
+            }
+        }
     // MARK: - UI 구성
     func setupUI() {
         // 앨범 이미지
@@ -134,29 +145,35 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     // MARK: - 곡추가 버튼 동작
     @objc func openTrackPicker() {
         let pickerVC = TrackPickerViewController()
-        let navController = UINavigationController(rootViewController: pickerVC) // 버튼 포함 위해 네비게이션
-        
+        let navController = UINavigationController(rootViewController: pickerVC)
+
+        // ✅ 현재 플레이리스트의 곡들과 ID 전달
+        pickerVC.playlistID = self.musicList.id
+        pickerVC.existingTracks = self.musicList.playlist
+
         if let sheet = navController.sheetPresentationController {
             sheet.detents = [.medium(), .large()]
             sheet.prefersGrabberVisible = true
         }
-        
+
         pickerVC.onTracksSelected = { [weak self] (newSongs: [Song]) in
             guard let self = self else { return }
             
-            // ✅ 다중 곡 추가
             self.musicList.playlist.append(contentsOf: newSongs)
             
-            // PlaylistManager에 반영
             if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
                 PlaylistManager.shared.playlists[index] = self.musicList
+            } else {
+                PlaylistManager.shared.playlists.append(self.musicList)
             }
             
+            PlaylistManager.shared.savePlaylists()
             self.tableView.reloadData()
         }
         
         present(navController, animated: true, completion: nil)
     }
+  
     //    // MARK: - 특정 인덱스 음악 재생
     //    func playMusic(at index: Int) {
     //        guard index < musicList.count else { return }

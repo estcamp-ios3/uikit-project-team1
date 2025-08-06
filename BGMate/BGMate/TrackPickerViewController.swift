@@ -17,6 +17,10 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
     
     private var selectedTracks: [Song] = []
     
+    // ✅ 현재 플레이리스트에 존재하는 곡들 (중복 제거용)
+    var existingTracks: [Song] = []
+    var playlistID: UUID? // 현재 플레이리스트의 ID
+    
     // ✅ 하단 버튼
         private let confirmButton: UIButton = {
             let button = UIButton(type: .system)
@@ -33,7 +37,18 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         title = "곡 추가"
+    
+        // ✅ 기존 곡들의 fileName 기준으로 중복 필터링
+        var existingFileNames = Set(existingTracks.map { $0.fileName })
+        // 만약 existingTracks가 비어있다면 PlaylistManager에서 다시 가져오기
+        if existingTracks.isEmpty, let id = playlistID,
+        let playlist = PlaylistManager.shared.playlists.first(where: { $0.id == id }) {
+            existingFileNames = Set(playlist.playlist.map { $0.fileName })
+            }
         
+        // ✅ 기존 곡 제외
+        availableTracks = songs.filter { !existingFileNames.contains($0.fileName) }
+
         tableView.allowsMultipleSelection = true
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
@@ -61,18 +76,17 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
     @objc func doneSelecting() {
         onTracksSelected?(selectedTracks)
         dismiss(animated: true, completion: nil)
-       }
+        }
     
     // MARK: - DataSource
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
             return availableTracks.count
-    }
+        }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
             let cell = tableView.dequeueReusableCell(withIdentifier: "TrackCell", for: indexPath)
             let track = availableTracks[indexPath.row]
             
-            // 제목 + 태그 같이 표시
             var content = cell.defaultContentConfiguration()
             content.text = track.title
             content.secondaryText = track.tags.joined(separator: ", ")
@@ -80,6 +94,7 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
             
             return cell
         }
+        
     
     // MARK: - Delegate
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
