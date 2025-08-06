@@ -16,6 +16,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
     var filteredResults: [Playlist] = PlaylistManager.shared.playlists
     
     var isEditingPlaylists = false // Track edit mode
+    var isSearchBarHidden = true
     
     // Initialize the collection view with a flow layout
     override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
@@ -55,6 +56,13 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
             target: self,
             action: #selector(rightBarButtonTapped)
         )
+        
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            image: UIImage(systemName: "magnifyingglass"),
+            style: .plain,
+            target: self,
+            action: #selector(leftBarButtonTapped)
+        )
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -92,6 +100,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         searchBar.placeholder = "Type to search..."
         searchBar.delegate = self
         searchBar.backgroundImage = UIImage()
+        searchBar.isHidden = isSearchBarHidden
         
         searchBar.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(searchBar)
@@ -100,7 +109,8 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         NSLayoutConstraint.activate([
             searchBar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
+            searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
+            searchBar.heightAnchor.constraint(equalToConstant: isSearchBarHidden ? 0 : 56)
         ])
     }
     
@@ -145,6 +155,15 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         
         // Reload collection view to show/hide delete icons
         collectionView.reloadData()
+    }
+    
+    @objc func leftBarButtonTapped() {
+        isSearchBarHidden.toggle()
+        
+        // Change the right bar button icon
+        navigationItem.leftBarButtonItem?.image = isSearchBarHidden ? UIImage(systemName: "magnifyingglass") : UIImage(systemName: "multiply")
+        
+        setupSearchBar()
     }
 }
 
