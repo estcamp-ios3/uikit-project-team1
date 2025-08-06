@@ -25,5 +25,5 @@ let songs: [Song] = [
     Song(id: UUID(), title: "🎵 Chillhop Lofi Beats (Music For Videos) ", artist: "BreakingCopyright — Royalty Free Music", tags: ["modern", "energetic"], fileName: "Fashion by Alex Productions"),
     Song(id: UUID(), title: "Asian trap beat 2022 | Asian music instrumental (Uness Beatz)", artist: "ChillSpace", tags: ["sleep", "chillhop", "cafe"], fileName: "Float"),
     Song(id: UUID(), title: "Japanese Mood", artist: "Uness Beatz", tags: ["bar", "sleep", "brand_cover"], fileName: "JapaneseMoodSong"),
-    Song(id: UUID(), title: "watermelt", artist: "Yūgen", tags: ["nature", "seasonal"], fileName: "watermelt - summer"),
+    Song(id: UUID(), title: "watermelt", artist: "Yūgen", tags: ["nature", "summer"], fileName: "watermelt - summer"),
 ]
