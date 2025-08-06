@@ -38,7 +38,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     // MARK: - 생명 주기
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = .systemBackground
         setupUI()
         updateUI()
     
@@ -72,6 +72,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         // 제목
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = .systemFont(ofSize: 40, weight: .semibold)
+        titleLabel.textColor = .label
         view.addSubview(titleLabel)
         
         // + 곡추가 (기능 없음 - 비활성)
@@ -271,8 +272,9 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         content.text = "\(song.title) - \(song.artist)"
         content.textProperties.numberOfLines = 1
         content.textProperties.lineBreakMode = .byTruncatingTail
+        content.textProperties.color = .label
         cell.contentConfiguration = content
-
+        cell.backgroundColor = .systemBackground
         return cell
     }
     
