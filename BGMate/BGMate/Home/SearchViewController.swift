@@ -98,7 +98,11 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
             selectedTag: [filteredResults[indexPath.row].tags],
             playlist: songs.filter { $0.tags.contains(filteredResults[indexPath.row].tags)}
         )
-        if !musicList!.playlist.isEmpty {
+        if musicList!.playlist.isEmpty {
+            let alert = UIAlertController(title: "Alert", message: "No song found", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            present(alert, animated: true, completion: nil)
+        } else {
             playAllMusic()
         }
     }
