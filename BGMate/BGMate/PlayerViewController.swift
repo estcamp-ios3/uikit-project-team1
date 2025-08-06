@@ -42,8 +42,7 @@ class PlayerViewController: UIViewController {
     // 플레이리스트/상단 제목
     private let playlistLabel: UILabel = {
         let label = UILabel()
-        label.text = //"Chill Lofi Music ~ lofi hip hop mix"
-        "오후 일식"
+        label.text = "" // 실제 플레이리스트 제목으로 동적으로 설정
         label.font = .systemFont(ofSize: 20, weight: .medium)
         label.textColor = .white
         label.textAlignment = .center
@@ -169,6 +168,9 @@ class PlayerViewController: UIViewController {
         setupActions()
         setupNotifications()
         
+        // 플레이리스트 정보 업데이트
+        updatePlaylistInfo()
+        
         // musicList와 currentIndex가 세팅되어 있으면 해당 곡 재생 (shouldRestartPlayback 확인)
         if !musicList.playlist.isEmpty && currentIndex < musicList.playlist.count {
             if shouldRestartPlayback {
@@ -198,6 +200,22 @@ class PlayerViewController: UIViewController {
         NotificationCenter.default.addObserver(self,
         selector: #selector(handlePlaybackFinished),
         name: .AVPlayerItemDidPlayToEndTime, object: nil)
+    }
+    
+    // MARK: - 플레이리스트 정보 업데이트
+    private func updatePlaylistInfo() {
+        guard musicList != nil else { return }
+        
+        // 플레이리스트 제목 설정
+        playlistLabel.text = musicList.title
+        
+        // 플레이리스트 커버 이미지 설정
+        if let coverImageName = musicList.coverImageName {
+            albumImageView.image = UIImage(named: coverImageName)
+        } else {
+            // 기본 이미지 설정 (필요시)
+            albumImageView.image = UIImage(named: "japanese")
+        }
     }
     
     // MARK: - 제스처 관련 메서드
