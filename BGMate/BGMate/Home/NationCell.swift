@@ -55,7 +55,7 @@ class NationCell: UICollectionViewCell {
         let animation = CAKeyframeAnimation(keyPath: "transform.rotation")
         animation.values = [-0.03, 0.03, -0.03]
         animation.autoreverses = true
-        animation.duration = 1
+        animation.duration = 0.5
         animation.repeatCount = .infinity
         layer.add(animation, forKey: "shaking")
     }
