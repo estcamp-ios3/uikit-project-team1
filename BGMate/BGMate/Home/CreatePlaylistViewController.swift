@@ -8,8 +8,9 @@
 import UIKit
 import Combine
 
-class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
+class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITextFieldDelegate {
     private var selectedCategories: [Tags] = []
+    var displayTagList: [Tags] = []
     
     private let closeButton: UIButton = {
         let config = UIButton.Configuration.plain() // 기본 스타일
@@ -43,17 +44,6 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         return label
     }()
     
-//    private let infoLabel: UILabel = {
-//        let label = UILabel()
-//        label.textColor = .secondaryLabel
-//        label.font = UIFont.systemFont(ofSize: 16)
-//        label.textAlignment = .left
-//        label.text = "Playlist에 추가할 Tag를 선택해주세요."
-//        //        label.textColor = UIColor(red: 0.2, green: 0.2, blue: 0.2, alpha: 1.0)
-//        label.translatesAutoresizingMaskIntoConstraints = false
-//        
-//        return label
-//    }()
     private let infoLabel: UIStackView = {
         let imageView = UIImageView(image: UIImage(systemName: "checkmark.circle.fill"))
         imageView.tintColor = .systemBlue
@@ -61,18 +51,19 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.widthAnchor.constraint(equalToConstant: 20).isActive = true
         imageView.heightAnchor.constraint(equalToConstant: 20).isActive = true
-
+        
         let label = UILabel()
         label.textColor = .secondaryLabel
         label.font = UIFont.systemFont(ofSize: 16)
         label.textAlignment = .left
         label.text = "Playlist에 추가할 Tag를 선택해주세요."
-
+        
         let stack = UIStackView(arrangedSubviews: [imageView, label])
         stack.axis = .horizontal
-        stack.spacing = 8
+        stack.spacing = 4
         stack.alignment = .center
         stack.translatesAutoresizingMaskIntoConstraints = false
+        
         return stack
     }()
     
@@ -88,7 +79,6 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
                 .font: UIFont.systemFont(ofSize: 16, weight: .medium)
             ]
         )
-        
         textField.translatesAutoresizingMaskIntoConstraints = false
         
         return textField
@@ -110,9 +100,19 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
+        nameTextField.delegate = self  // ✅ Validation 델리게이트 지정
+        
+        //  ✅ songs.tags 문자열이 포함되지 않을 TagList 필터링
+        let allSongTags = Set(songs.flatMap { $0.tags })
+            displayTagList = tagList.filter { allSongTags.contains($0.tags) }
+        
         setLayout()
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        nameTextField.becomeFirstResponder() // 화면 뜨자마자 키보드 활성화
+    }
     
     // MARK: - Layout
     private func setLayout() {
@@ -158,9 +158,9 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             infoLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 16),
             infoLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
             infoLabel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
-
             
-            collectionView.topAnchor.constraint(equalTo: infoLabel.bottomAnchor, constant: 16),
+            
+            collectionView.topAnchor.constraint(equalTo: infoLabel.bottomAnchor, constant: 8),
             collectionView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
             collectionView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
             collectionView.bottomAnchor.constraint(equalTo: createButton.topAnchor, constant: -16),
@@ -177,21 +177,21 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return tagList.count // Tags.swift 파일의 tagList 사용
+        return displayTagList.count
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TagsCell.identifier, for: indexPath) as? TagsCell else {
             return UICollectionViewCell()
         }
-        let tagsCell = tagList[indexPath.item]
+        let tagsCell = displayTagList[indexPath.item]
         cell.configure(with: tagsCell) // 셀 구성
         return cell
     }
     
     // 아이템 선택 시 동작
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedTag = tagList[indexPath.item]
+        let selectedTag = displayTagList[indexPath.item]
         selectedCategories.append(selectedTag)
         print("Selected Tags: \(selectedTag.tags)")
     }
@@ -199,27 +199,78 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     // 아이템 선택 해제시 동작
     func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
         
-        let deselectedTag = tagList[indexPath.item]
+        let deselectedTag = displayTagList[indexPath.item]
         selectedCategories.removeAll { $0.id == deselectedTag.id }
         print("해제된 태그: \(deselectedTag.tags)")
     }
     
-    //MARK: - close
+    
+    //MARK: - Sheet Close
     private func didTapClose() {
         self.dismiss(animated: true, completion: nil)
     }
     
-    //MARK: - Create Playlist
+    
+    //MARK: - TextField Validation
+    func textField(_ textField: UITextField,
+                   shouldChangeCharactersIn range: NSRange,
+                   replacementString string: String) -> Bool {
+        
+        // 현재 입력된 텍스트
+        let currentText = textField.text ?? ""
+        guard let stringRange = Range(range, in: currentText) else { return false }
+        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
+        
+        // 한글 포함 여부 판단
+        let containsHangul = updatedText.contains {
+            $0.unicodeScalars.contains { !$0.isASCII && $0.properties.isAlphabetic }
+        }
+        
+        // 글자 수 제한
+        let maxCount = containsHangul ? 12 : 22
+        guard updatedText.count <= maxCount else { return false }
+        
+        // 삭제 이벤트는 항상 허용
+        if string.isEmpty { return true }
+        
+        // 한글 조합 중 입력 허용
+        if string.unicodeScalars.count == 1,
+           string.unicodeScalars.first?.properties.isAlphabetic == true {
+            return true
+        }
+        
+        // 허용된 문자만 입력 가능
+        let allowedCharacterSet = CharacterSet(
+            charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789가-힣 _-!@#$%^&*()+~`|[]{}\":;'<>?,./"
+        )
+        let inputCharacterSet = CharacterSet(charactersIn: string)
+        return allowedCharacterSet.isSuperset(of: inputCharacterSet)
+    }
+    
+    
+    // MARK: - Return key handling: UITextFieldDelegate 프로토콜에서 제공
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder() // 키보드 닫기
+        return true
+    }
+    
+    
+    // MARK: - Create Playlist
     private func didTapCreate() {
-        // 플레이리스트 제목 및 커버 설정
-        //        guard let playlistName = nameTextField.text, !playlistName.trimmingCharacters(in: .whitespaces).isEmpty else {
-        //               // ⚠️ 경고창 띄우기
-        //               let alert = UIAlertController(title: "이름 없음", message: "플레이리스트 이름을 입력해주세요.", preferredStyle: .alert)
-        //               alert.addAction(UIAlertAction(title: "확인", style: .default))
-        //               present(alert, animated: true)
-        //               return
-        //           }
-        //
+        // 제목 자동 생성 또는 사용자 입력
+        let selectedTitles = selectedCategories.map { $0.title }
+        let userInput = nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let playlistName: String
+        if userInput.isEmpty {
+            // 사용자가 입력하지 않은 경우 자동 생성
+            if selectedTitles.count == 1 {
+                playlistName = selectedTitles[0]
+            } else {
+                playlistName = "\(selectedTitles[0]) 외 \(selectedTitles.count - 1)건"
+            }
+        } else {
+            playlistName = userInput
+        }
         
         let selectedTagStrings = selectedCategories.map { $0.tags }
         guard !selectedTagStrings.isEmpty else {
@@ -230,22 +281,6 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             return
         }
         
-        // 제목 자동 생성 또는 사용자 입력
-        let selectedTitles = selectedCategories.map { $0.title }
-        let userInput = nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let playlistName: String
-        if userInput.isEmpty {
-            // 사용자가 입력하지 않은 경우 자동 생성
-            if selectedTitles.count == 1 {
-                playlistName = selectedTitles[0]
-            } else if selectedTitles.count < 2 {
-                playlistName = selectedTitles.joined(separator: ", ")
-            } else {
-                playlistName = "\(selectedTitles[0]) 외 \(selectedTitles.count - 1)건"
-            }
-        } else {
-            playlistName = userInput
-        }
         
         // 태그가 겹치는 곡들 필터링
         let filteredSongs = songs.filter { song in
