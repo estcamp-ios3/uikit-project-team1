@@ -150,11 +150,13 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         // ✅ 현재 플레이리스트의 곡들과 ID 전달
         pickerVC.playlistID = self.musicList.id
         pickerVC.existingTracks = self.musicList.playlist
-
+        
+        // ✅ iOS 시트 스타일 사용
         if let sheet = navController.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-            sheet.prefersGrabberVisible = true
-        }
+            sheet.detents = [.large()]            // 전체화면 직전 높이
+            sheet.prefersGrabberVisible = false   // 상단 가이드 핸들 제거
+            sheet.preferredCornerRadius = 20      // 모서리 둥글게 (선택)
+           }
 
         pickerVC.onTracksSelected = { [weak self] (newSongs: [Song]) in
             guard let self = self else { return }
