@@ -8,7 +8,7 @@
 import UIKit
 
 class MainTabBarController: UITabBarController {
-
+    
     // 1. 미니플레이어 VC 프로퍼티로 보관
     let miniPlayerVC = MiniPlayerViewController()
     
@@ -22,25 +22,25 @@ class MainTabBarController: UITabBarController {
     private var shuffledIndices: [Int] = []
     private var playHistory: [Int] = []
     private var originalShuffledIndices: [Int] = []
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         // 2. 탭(예시)
         let homeVC = UINavigationController(rootViewController: HomeViewController())
         homeVC.tabBarItem = UITabBarItem(title: "BGMate", image: UIImage(systemName: "house"), tag: 0)
-
+        
         let searchVC = UINavigationController(rootViewController: SearchViewController())
         searchVC.tabBarItem = UITabBarItem(title: "LIBRARY", image: UIImage(systemName: "square.stack"), tag: 1)
-
+        
         self.viewControllers = [homeVC, searchVC]
-
+        
         // 3. 미니플레이어 뷰 추가 (child로 추가하지 않음)
         view.addSubview(miniPlayerVC.view)
         
         // 미니플레이어 델리게이트 설정
         miniPlayerVC.delegate = self
-
+        
         // 4. 오토레이아웃 제약 (항상 탭바 위에!)
         miniPlayerVC.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
@@ -49,11 +49,11 @@ class MainTabBarController: UITabBarController {
             miniPlayerVC.view.bottomAnchor.constraint(equalTo: tabBar.topAnchor),
             miniPlayerVC.view.heightAnchor.constraint(equalToConstant: 65)
         ])
-
+        
         // 5. 처음엔 숨김 처리
         miniPlayerVC.hide(animated: false)
     }
-
+    
     // 6. 외부에서 미니플레이어 접근 (옵셔널)
     func getMiniPlayerVC() -> MiniPlayerViewController {
         return miniPlayerVC
