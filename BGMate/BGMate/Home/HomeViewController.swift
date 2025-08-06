@@ -171,8 +171,27 @@ extension HomeViewController: UICollectionViewDataSource {
             cell.nameLabel.text = playlist.title
             
             if isEditingPlaylists {
+                let deleteIcon = UIImageView(image: UIImage(systemName: "minus.circle.fill"))
+                deleteIcon.tintColor = .red
+                deleteIcon.translatesAutoresizingMaskIntoConstraints = false
+                cell.contentView.addSubview(deleteIcon)
+
+                NSLayoutConstraint.activate([
+                    deleteIcon.topAnchor.constraint(equalTo: cell.contentView.topAnchor, constant: 4),
+                    deleteIcon.leadingAnchor.constraint(equalTo: cell.contentView.leadingAnchor, constant: 4),
+                    deleteIcon.widthAnchor.constraint(equalToConstant: 25),
+                    deleteIcon.heightAnchor.constraint(equalToConstant: 25)
+                ])
+
                 cell.startShaking()
             } else {
+                // Remove delete icon if it exists
+                for subview in cell.contentView.subviews {
+                    if let imageView = subview as? UIImageView, imageView.image == UIImage(systemName: "minus.circle.fill") {
+                        imageView.removeFromSuperview()
+                    }
+                }
+                
                 cell.stopShaking()
             }
             
