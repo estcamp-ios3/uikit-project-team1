@@ -43,7 +43,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         updateUI()
     
     tableView.rowHeight = UITableView.automaticDimension
-          tableView.estimatedRowHeight = 50
+    tableView.estimatedRowHeight = 50
       }
     
     /// ✅ 화면에 진입할 때마다 최신 PlaylistManager 데이터를 불러오기
@@ -131,10 +131,27 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     // MARK: - UI 업데이트
     func updateUI() {
         titleLabel.text = musicList.title
-        imageView.image = UIImage(named: musicList.coverImageName ?? "default_cover")
+            imageView.image = UIImage(named: musicList.coverImageName ?? "default_cover")
+
+            let hasSongs = !musicList.playlist.isEmpty
+            playAllButton.isEnabled = hasSongs
+
+            UIView.animate(withDuration: 0.25) { // ✅ 부드러운 전환
+                if hasSongs {
+                    self.playAllButton.backgroundColor = .systemBlue
+                    self.playAllButton.setTitleColor(.white, for: .normal)
+                    self.playAllButton.alpha = 1.0
+                } else {
+                    self.playAllButton.backgroundColor = .systemGray4
+                    self.playAllButton.setTitleColor(.systemGray2, for: .normal)
+                    self.playAllButton.alpha = 0.8
+            }
+        }
     }
     // MARK: - 전체 재생 (순차 재생)
     @objc func playAllMusic() {
+        guard !musicList.playlist.isEmpty else { return } // ✅ 안전장치 추가
+        
         // PlayerViewController를 모달로 띄우고, 음악 리스트와 첫 곡 정보를 전달
         let playerVC = PlayerViewController()
         playerVC.musicList = musicList
@@ -171,6 +188,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
             
             PlaylistManager.shared.savePlaylists()
             self.tableView.reloadData()
+            self.updateUI()  // ✅ 즉시 버튼 상태 반영
         }
         
         present(navController, animated: true, completion: nil)
@@ -238,6 +256,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
                }
                
                tableView.deleteRows(at: [indexPath], with: .automatic)
+               updateUI()  // ✅ 삭제 후 버튼 상태 즉시 반영
            }
        }
        
@@ -249,6 +268,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // 아무 동작도 하지 않음 (개별 곡 선택 시 재생 제거)
         tableView.deselectRow(at: indexPath, animated: true)
+       
     }
     
 }
