@@ -21,7 +21,7 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .systemBackground
-        self.title = "SEARCH"
+        self.title = "LIBRARY"
         
         tableView.register(SearchResultCell.self, forCellReuseIdentifier: "SearchResultCell")
         
