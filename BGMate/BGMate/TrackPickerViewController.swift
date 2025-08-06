@@ -21,6 +21,27 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
     var existingTracks: [Song] = []
     var playlistID: UUID? // 현재 플레이리스트의 ID
     
+    // ✅ 닫기 버튼 (커스텀 스타일)
+        private lazy var closeButton: UIButton = {
+            var config = UIButton.Configuration.plain()
+            config.contentInsets = NSDirectionalEdgeInsets(top: 4, leading: 4, bottom: 4, trailing: 4)
+            config.background.backgroundColor = .systemGray5
+            config.background.cornerRadius = (12 + 4 * 2) / 2 // 원형 유지
+            config.background.strokeWidth = 0
+            config.imagePadding = 0
+
+            let button = UIButton(configuration: config, primaryAction: nil)
+            let icon = UIImage(
+                systemName: "xmark",
+                withConfiguration: UIImage.SymbolConfiguration(pointSize: 12, weight: .regular)
+            )
+            button.setImage(icon, for: .normal)
+            button.tintColor = .systemGray
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.addTarget(self, action: #selector(didTapClose), for: .touchUpInside)
+            return button
+        }()
+    
     // ✅ 하단 버튼
         private let confirmButton: UIButton = {
             let button = UIButton(type: .system)
@@ -70,12 +91,7 @@ class TrackPickerViewController: UIViewController, UITableViewDelegate, UITableV
         ])
         
         // Add right bar button item
-        navigationItem.rightBarButtonItem = UIBarButtonItem(
-            image: UIImage(systemName: "multiply.circle.fill"),
-            style: .plain,
-            target: self,
-            action: #selector(didTapClose)
-        )
+        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: closeButton)
 
         // ✅ 하단 버튼 추가
         confirmButton.addTarget(self, action: #selector(doneSelecting), for: .touchUpInside)
