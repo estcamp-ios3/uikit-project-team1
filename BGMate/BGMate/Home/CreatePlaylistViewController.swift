@@ -152,7 +152,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             
             nameTextField.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 16),
             nameTextField.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
-            nameTextField.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: 16),
+            nameTextField.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
             nameTextField.heightAnchor.constraint(equalToConstant: 44),
             
             infoLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 16),
