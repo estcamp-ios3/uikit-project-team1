@@ -9,8 +9,8 @@ import Foundation
 
 struct Playlist: Identifiable, Codable {
     var id: UUID = UUID()
-    let title: String
+    var title: String
     var coverImageName: String?
-    let selectedTag: [String] // ✅ 여기! 추가되었습니다!
+    var selectedTag: [String] // ✅ 여기! 추가되었습니다!
     var playlist: [Song]
 }
