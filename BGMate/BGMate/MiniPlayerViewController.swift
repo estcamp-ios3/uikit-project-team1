@@ -10,8 +10,8 @@ import UIKit
 protocol MiniPlayerDelegate: AnyObject {
     func miniPlayerDidTap()
     func miniPlayerPlayPauseDidTap()
-    func miniPlayerDidSwipeLeft()
-    func miniPlayerDidSwipeRight()
+    func miniPlayerPreviousDidTap()
+    func miniPlayerNextDidTap()
 }
 
 class MiniPlayerViewController: UIViewController {
@@ -19,7 +19,7 @@ class MiniPlayerViewController: UIViewController {
     // MARK: - UI 구성요소
     private let containerView: UIView = {
         let view = UIView()
-        view.backgroundColor = .gray.withAlphaComponent(0.7)
+        view.backgroundColor = .gray
         // 그림자 효과 추가
         view.layer.shadowColor = UIColor.black.cgColor
         view.layer.shadowOffset = CGSize(width: 0, height: -2)
@@ -39,11 +39,22 @@ class MiniPlayerViewController: UIViewController {
         return imageView
     }()
     
+    // 제목을 위한 스크롤 가능한 컨테이너
+    private let titleScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.isScrollEnabled = false  // 수동 스크롤 비활성화
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
+    }()
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .medium)
         label.textColor = .label
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 1
         return label
     }()
     
@@ -55,12 +66,30 @@ class MiniPlayerViewController: UIViewController {
         return label
     }()
     
+    private let previousButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "backward.fill"), for: .normal)
+        button.tintColor = .label
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isUserInteractionEnabled = true
+        return button
+    }()
+    
     private let playPauseButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "play.fill"), for: .normal)
         button.tintColor = .label
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isUserInteractionEnabled = true  // 사용자 상호작용 활성화
+        return button
+    }()
+    
+    private let nextButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setImage(UIImage(systemName: "forward.fill"), for: .normal)
+        button.tintColor = .label
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.isUserInteractionEnabled = true
         return button
     }()
     
@@ -78,6 +107,10 @@ class MiniPlayerViewController: UIViewController {
     private var isPlaying: Bool = false
     private var currentSong: Song?
     private var progressTimer: Timer?
+    
+    // 텍스트 스크롤링 애니메이션 관련
+    private var titleScrollTimer: Timer?
+    private var isScrollingTitle = false
     
 // 호출
     override func viewDidLoad() {
@@ -98,15 +131,25 @@ class MiniPlayerViewController: UIViewController {
         view.addSubview(containerView)
         containerView.addSubview(albumImageView)
         
-        // 제목과 아티스트 레이블을 담을 스택뷰
-        let labelStackView = UIStackView(arrangedSubviews: [titleLabel, artistLabel])
+        // 제목 스크롤뷰 설정
+        titleScrollView.addSubview(titleLabel)
+        
+        // 제목 스크롤뷰와 아티스트 레이블을 담을 스택뷰
+        let labelStackView = UIStackView(arrangedSubviews: [titleScrollView, artistLabel])
         labelStackView.axis = .vertical
         labelStackView.spacing = 2
         labelStackView.translatesAutoresizingMaskIntoConstraints = false
         labelStackView.isUserInteractionEnabled = true
         
+        // 버튼들을 담을 스택뷰 생성
+        let buttonStackView = UIStackView(arrangedSubviews: [previousButton, playPauseButton, nextButton])
+        buttonStackView.axis = .horizontal
+        buttonStackView.spacing = 8
+        buttonStackView.translatesAutoresizingMaskIntoConstraints = false
+        buttonStackView.isUserInteractionEnabled = true
+        
         containerView.addSubview(labelStackView)
-        containerView.addSubview(playPauseButton)
+        containerView.addSubview(buttonStackView)
         containerView.addSubview(progressView)
         
         // 모든 뷰의 사용자 상호작용 활성화
@@ -114,7 +157,9 @@ class MiniPlayerViewController: UIViewController {
         albumImageView.isUserInteractionEnabled = true
         titleLabel.isUserInteractionEnabled = true
         artistLabel.isUserInteractionEnabled = true
+        previousButton.isUserInteractionEnabled = true
         playPauseButton.isUserInteractionEnabled = true
+        nextButton.isUserInteractionEnabled = true
         
         // 오토레이아웃 설정
         NSLayoutConstraint.activate([
@@ -133,23 +178,41 @@ class MiniPlayerViewController: UIViewController {
             // 레이블 스택뷰
             labelStackView.leadingAnchor.constraint(equalTo: albumImageView.trailingAnchor, constant: 12),
             labelStackView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            labelStackView.trailingAnchor.constraint(equalTo: playPauseButton.leadingAnchor, constant: -12),
+            labelStackView.trailingAnchor.constraint(equalTo: buttonStackView.leadingAnchor, constant: -12),
             
-            // 재생/일시정지 버튼
-            playPauseButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
-            playPauseButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
-            playPauseButton.widthAnchor.constraint(equalToConstant: 44),
-            playPauseButton.heightAnchor.constraint(equalToConstant: 44),
+            // 버튼 스택뷰
+            buttonStackView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+            buttonStackView.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            
+            // 각 버튼 크기 설정
+            previousButton.widthAnchor.constraint(equalToConstant: 36),
+            previousButton.heightAnchor.constraint(equalToConstant: 36),
+            playPauseButton.widthAnchor.constraint(equalToConstant: 40),
+            playPauseButton.heightAnchor.constraint(equalToConstant: 40),
+            nextButton.widthAnchor.constraint(equalToConstant: 36),
+            nextButton.heightAnchor.constraint(equalToConstant: 36),
             
             // 진행 바 (컨테이너 하단에 배치)
             progressView.leadingAnchor.constraint(equalTo: containerView.leadingAnchor),
             progressView.trailingAnchor.constraint(equalTo: containerView.trailingAnchor),
             progressView.bottomAnchor.constraint(equalTo: containerView.bottomAnchor),
-            progressView.heightAnchor.constraint(equalToConstant: 2)
+            progressView.heightAnchor.constraint(equalToConstant: 2),
+            
+            // 제목 스크롤뷰 제약조건
+            titleScrollView.heightAnchor.constraint(equalToConstant: 20),
+            
+            // 제목 레이블 제약조건 (스크롤뷰 내부)
+            titleLabel.leadingAnchor.constraint(equalTo: titleScrollView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: titleScrollView.trailingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: titleScrollView.topAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: titleScrollView.bottomAnchor),
+            titleLabel.heightAnchor.constraint(equalTo: titleScrollView.heightAnchor)
         ])
         
         // 버튼 액션 추가
+        previousButton.addTarget(self, action: #selector(previousButtonTapped), for: .touchUpInside)
         playPauseButton.addTarget(self, action: #selector(playPauseButtonTapped), for: .touchUpInside)
+        nextButton.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)
     }
     
     // MARK: - 제스처 설정
@@ -178,6 +241,11 @@ class MiniPlayerViewController: UIViewController {
         delegate?.miniPlayerDidTap()
     }
     
+    @objc private func previousButtonTapped() {
+        print("Previous button tapped")  // 디버깅용 로그
+        delegate?.miniPlayerPreviousDidTap()
+    }
+    
     @objc private func playPauseButtonTapped() {
         print("Play/Pause button tapped")  // 디버깅용 로그
         isPlaying.toggle()
@@ -186,11 +254,18 @@ class MiniPlayerViewController: UIViewController {
         delegate?.miniPlayerPlayPauseDidTap()
     }
     
+    @objc private func nextButtonTapped() {
+        print("Next button tapped")  // 디버깅용 로그
+        delegate?.miniPlayerNextDidTap()
+    }
+    
     @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
         if gesture.direction == .left {
-            delegate?.miniPlayerDidSwipeLeft()
+            print("Left swipe detected")  // 디버깅용 로그
+            delegate?.miniPlayerNextDidTap()
         } else if gesture.direction == .right {
-            delegate?.miniPlayerDidSwipeRight()
+            print("Right swipe detected")  // 디버깅용 로그
+            delegate?.miniPlayerPreviousDidTap()
         }
     }
     
@@ -221,6 +296,11 @@ class MiniPlayerViewController: UIViewController {
         
         // 새로운 곡으로 변경되면 진행 바 리셋
         progressView.setProgress(0.0, animated: false)
+        
+        // 레이아웃이 완료된 후 스크롤링 애니메이션 시작
+        DispatchQueue.main.async { [weak self] in
+            self?.startTitleScrollingIfNeeded()
+        }
     }
     
     func show(animated: Bool = true) {
@@ -228,6 +308,10 @@ class MiniPlayerViewController: UIViewController {
             view.alpha = 1.0
             if isPlaying {
                 startProgressTimer()
+            }
+            // 레이아웃이 완료된 후 스크롤링 시작
+            DispatchQueue.main.async { [weak self] in
+                self?.startTitleScrollingIfNeeded()
             }
             return
         }
@@ -239,11 +323,16 @@ class MiniPlayerViewController: UIViewController {
             if self.isPlaying {
                 self.startProgressTimer()
             }
+            // 레이아웃이 완료된 후 스크롤링 시작
+            DispatchQueue.main.async { [weak self] in
+                self?.startTitleScrollingIfNeeded()
+            }
         }
     }
     
     func hide(animated: Bool = true) {
         stopProgressTimer()
+        stopTitleScrolling()  // 미니플레이어가 숨겨질 때 스크롤링 정지
         
         guard animated else {
             view.alpha = 0
@@ -276,9 +365,68 @@ class MiniPlayerViewController: UIViewController {
         progressView.setProgress(progress, animated: true)
     }
     
+    // MARK: - 텍스트 스크롤링 애니메이션
+    private func startTitleScrollingIfNeeded() {
+        // 기존 애니메이션 정지
+        stopTitleScrolling()
+        
+        // 텍스트가 컨테이너보다 길 때만 스크롤링 시작
+        titleLabel.sizeToFit()
+        let labelWidth = titleLabel.frame.width
+        let scrollViewWidth = titleScrollView.frame.width
+        
+        guard labelWidth > scrollViewWidth else {
+            // 텍스트가 짧으면 스크롤링 불필요
+            titleScrollView.contentOffset = CGPoint.zero
+            return
+        }
+        
+        // 스크롤링 시작
+        isScrollingTitle = true
+        titleScrollView.contentSize = CGSize(width: labelWidth, height: titleScrollView.frame.height)
+        
+        // 2초 후 스크롤링 시작
+        titleScrollTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+            self?.performTitleScrollAnimation()
+        }
+    }
+    
+    private func performTitleScrollAnimation() {
+        guard isScrollingTitle else { return }
+        
+        let labelWidth = titleLabel.frame.width
+        let scrollViewWidth = titleScrollView.frame.width
+        let scrollDistance = labelWidth - scrollViewWidth
+        
+        // 오른쪽 끝까지 스크롤
+        UIView.animate(withDuration: 3.0, delay: 0, options: [.curveLinear], animations: {
+            self.titleScrollView.contentOffset = CGPoint(x: scrollDistance + 20, y: 0) // 여백 추가
+        }) { [weak self] _ in
+            // 1초 대기 후 처음으로 돌아가기
+            self?.titleScrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+                UIView.animate(withDuration: 2.0, delay: 0, options: [.curveLinear], animations: {
+                    self?.titleScrollView.contentOffset = CGPoint.zero
+                }) { [weak self] _ in
+                    // 2초 대기 후 다시 스크롤링 시작
+                    self?.titleScrollTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+                        self?.performTitleScrollAnimation()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func stopTitleScrolling() {
+        isScrollingTitle = false
+        titleScrollTimer?.invalidate()
+        titleScrollTimer = nil
+        titleScrollView.layer.removeAllAnimations()
+    }
+    
     // MARK: - Deinit
     deinit {
         stopProgressTimer()
+        stopTitleScrolling()
     }
 }
 #Preview {
