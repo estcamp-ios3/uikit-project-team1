@@ -9,9 +9,7 @@ import UIKit
 
 // View controller responsible for the Search screen
 class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, UISearchBarDelegate {
-    var songs: [Song] = []
-    var musicList = Playlist(title: "Ronaldo, the GOAT", coverImageName: "", selectedTag: [], playlist: [])
-    
+    var musicList: Playlist?
     // Declaration of search bar and table view
     let searchBar = UISearchBar()
     let tableView = UITableView()
@@ -93,14 +91,16 @@ class SearchViewController: UIViewController, UITableViewDelegate, UITableViewDa
     // Navigate to music player screen when a cell is selected
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-        for each in songs {
-            if each.tags.contains(filteredResults[indexPath.row].tags) {
-                songs.append(each)
-            }
+        
+        musicList = Playlist(
+            title: filteredResults[indexPath.row].title,
+            coverImageName: filteredResults[indexPath.row].coverImageName,
+            selectedTag: [filteredResults[indexPath.row].tags],
+            playlist: songs.filter { $0.tags.contains(filteredResults[indexPath.row].tags)}
+        )
+        if !musicList!.playlist.isEmpty {
+            playAllMusic()
         }
-        musicList.coverImageName = filteredResults[indexPath.row].coverImageName
-        musicList.playlist = songs
-        playAllMusic()
     }
     
     // MARK: - SearchBar Delegate
