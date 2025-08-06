@@ -171,8 +171,14 @@ extension MainTabBarController: MiniPlayerDelegate {
         AudioManager.shared.prepareAudio(named: currentSong.fileName, fileExtension: "mp3")
         AudioManager.shared.play()
         
+        // 플레이리스트 커버 이미지 가져오기
+        var playlistImage: UIImage?
+        if let coverImageName = playlist.coverImageName {
+            playlistImage = UIImage(named: coverImageName)
+        }
+        
         // 미니플레이어 UI 업데이트
-        miniPlayerVC.updateNowPlaying(song: currentSong, image: nil)
+        miniPlayerVC.updateNowPlaying(song: currentSong, image: playlistImage)
         miniPlayerVC.updatePlaybackState(isPlaying: true)
         
         print("미니플레이어에서 곡 변경: \(currentSong.title)")

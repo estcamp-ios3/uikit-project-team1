@@ -29,6 +29,10 @@ class PlayerViewController: UIViewController {
     // 재생 히스토리를 저장할 배열
     private var playHistory: [Int] = []
     
+    // 텍스트 스크롤링 애니메이션 관련
+    private var titleScrollTimer: Timer?
+    private var isScrollingTitle = false
+    
     // 상단 드롭다운 화살표 (닫기용)
     private let dismissButton: UIButton = {
         let button = UIButton(type: .system)
@@ -62,6 +66,16 @@ class PlayerViewController: UIViewController {
         return imageView
     }()
 
+    // 제목을 위한 스크롤 가능한 컨테이너
+    private let titleScrollView: UIScrollView = {
+        let scrollView = UIScrollView()
+        scrollView.showsHorizontalScrollIndicator = false
+        scrollView.showsVerticalScrollIndicator = false
+        scrollView.isScrollEnabled = false  // 수동 스크롤 비활성화
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        return scrollView
+    }()
+    
     // 곡명
     private let titleLabel: UILabel = {
         let label = UILabel()
@@ -70,6 +84,7 @@ class PlayerViewController: UIViewController {
         label.textColor = .white
         label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
+        label.numberOfLines = 1
         return label
     }()
 
@@ -256,6 +271,9 @@ class PlayerViewController: UIViewController {
     
     // MARK: - 미니플레이어 관련 메서드
     private func minimizeToMiniPlayer() {
+        // 풀스크린 애니메이션 정지
+        stopTitleScrolling()
+        
         miniPlayer?.updateNowPlaying(
             song: musicList.playlist[currentIndex],
             image: albumImageView.image
@@ -291,7 +309,11 @@ class PlayerViewController: UIViewController {
         view.addSubview(dismissButton)
         view.addSubview(playlistLabel)
         view.addSubview(albumImageView)
-        view.addSubview(titleLabel)
+        
+        // 제목 스크롤뷰 설정
+        titleScrollView.addSubview(titleLabel)
+        view.addSubview(titleScrollView)
+        
         view.addSubview(artistLabel)
         view.addSubview(progressSlider)
         view.addSubview(currentTimeLabel)
@@ -326,15 +348,23 @@ class PlayerViewController: UIViewController {
             albumImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -32),
             albumImageView.heightAnchor.constraint(equalTo: albumImageView.widthAnchor),
             
-            // 곡명
-            titleLabel.topAnchor.constraint(equalTo: albumImageView.bottomAnchor, constant: 36),
-            titleLabel.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 28),
-            titleLabel.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -28),
+            // 제목 스크롤뷰
+            titleScrollView.topAnchor.constraint(equalTo: albumImageView.bottomAnchor, constant: 36),
+            titleScrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 28),
+            titleScrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -28),
+            titleScrollView.heightAnchor.constraint(equalToConstant: 35),
+            
+            // 제목 레이블 (스크롤뷰 내부)
+            titleLabel.leadingAnchor.constraint(equalTo: titleScrollView.leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: titleScrollView.trailingAnchor),
+            titleLabel.topAnchor.constraint(equalTo: titleScrollView.topAnchor),
+            titleLabel.bottomAnchor.constraint(equalTo: titleScrollView.bottomAnchor),
+            titleLabel.heightAnchor.constraint(equalTo: titleScrollView.heightAnchor),
             
             // 아티스트
-            artistLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 4),
-            artistLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            artistLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
+            artistLabel.topAnchor.constraint(equalTo: titleScrollView.bottomAnchor, constant: 4),
+            artistLabel.leadingAnchor.constraint(equalTo: titleScrollView.leadingAnchor),
+            artistLabel.trailingAnchor.constraint(equalTo: titleScrollView.trailingAnchor),
             
             // 슬라이더
             progressSlider.topAnchor.constraint(equalTo: artistLabel.bottomAnchor, constant: 36),
@@ -391,6 +421,7 @@ class PlayerViewController: UIViewController {
         
     @objc private func dismissTapped() {
         stopPlaybackTimer()
+        stopTitleScrolling()
         minimizeToMiniPlayer()
     }
     // 플레이 중 이면 pause 버튼 형태로 보여주고, 반대로 pause 상태면 play버튼으로 보여줌
@@ -457,6 +488,11 @@ class PlayerViewController: UIViewController {
         titleLabel.text = musicList.playlist[currentIndex].title
         artistLabel.text = musicList.playlist[currentIndex].artist
         
+        // 레이아웃이 완료된 후 스크롤링 애니메이션 시작
+        DispatchQueue.main.async { [weak self] in
+            self?.startTitleScrollingIfNeeded()
+        }
+        
         // 미니플레이어도 업데이트
         miniPlayer?.updateNowPlaying(
             song: musicList.playlist[currentIndex],
@@ -482,6 +518,11 @@ class PlayerViewController: UIViewController {
         // UI 업데이트만 수행
         titleLabel.text = musicList.playlist[currentIndex].title
         artistLabel.text = musicList.playlist[currentIndex].artist
+        
+        // 레이아웃이 완료된 후 스크롤링 애니메이션 시작
+        DispatchQueue.main.async { [weak self] in
+            self?.startTitleScrollingIfNeeded()
+        }
         
         // 재생 버튼 상태 업데이트 (현재 재생 상태에 따라)
         let imageName = AudioManager.shared.isPlaying ? "pause.fill" : "play.fill"
@@ -653,6 +694,64 @@ class PlayerViewController: UIViewController {
     @objc private func sliderValueChanged(_ sender: UISlider) {
         AudioManager.shared.seekTo(time: TimeInterval(sender.value))
         updatePlaybackUI()
+    }
+    
+    // MARK: - 텍스트 스크롤링 애니메이션
+    private func startTitleScrollingIfNeeded() {
+        // 기존 애니메이션 정지
+        stopTitleScrolling()
+        
+        // 텍스트가 컨테이너보다 길 때만 스크롤링 시작
+        titleLabel.sizeToFit()
+        let labelWidth = titleLabel.frame.width
+        let scrollViewWidth = titleScrollView.frame.width
+        
+        guard labelWidth > scrollViewWidth else {
+            // 텍스트가 짧으면 스크롤링 불필요
+            titleScrollView.contentOffset = CGPoint.zero
+            return
+        }
+        
+        // 스크롤링 시작
+        isScrollingTitle = true
+        titleScrollView.contentSize = CGSize(width: labelWidth, height: titleScrollView.frame.height)
+        
+        // 2초 후 스크롤링 시작
+        titleScrollTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+            self?.performTitleScrollAnimation()
+        }
+    }
+    
+    private func performTitleScrollAnimation() {
+        guard isScrollingTitle else { return }
+        
+        let labelWidth = titleLabel.frame.width
+        let scrollViewWidth = titleScrollView.frame.width
+        let scrollDistance = labelWidth - scrollViewWidth
+        
+        // 오른쪽 끝까지 스크롤
+        UIView.animate(withDuration: 3.0, delay: 0, options: [.curveLinear], animations: {
+            self.titleScrollView.contentOffset = CGPoint(x: scrollDistance + 20, y: 0) // 여백 추가
+        }) { [weak self] _ in
+            // 1초 대기 후 처음으로 돌아가기
+            self?.titleScrollTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+                UIView.animate(withDuration: 2.0, delay: 0, options: [.curveLinear], animations: {
+                    self?.titleScrollView.contentOffset = CGPoint.zero
+                }) { [weak self] _ in
+                    // 2초 대기 후 다시 스크롤링 시작
+                    self?.titleScrollTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+                        self?.performTitleScrollAnimation()
+                    }
+                }
+            }
+        }
+    }
+    
+    private func stopTitleScrolling() {
+        isScrollingTitle = false
+        titleScrollTimer?.invalidate()
+        titleScrollTimer = nil
+        titleScrollView.layer.removeAllAnimations()
     }
 }
 
