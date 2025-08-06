@@ -649,11 +649,11 @@ extension PlayerViewController: MiniPlayerDelegate {
         playTapped()
     }
     
-    func miniPlayerDidSwipeLeft() {
+    func miniPlayerNextDidTap() {
         nextTapped()
     }
     
-    func miniPlayerDidSwipeRight() {
+    func miniPlayerPreviousDidTap() {
         prevTapped()
     }
     // MARK: - 미니플레이어 연결 설정

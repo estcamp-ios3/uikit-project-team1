@@ -122,7 +122,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         miniPlayerVC.updatePlaybackState(isPlaying: AudioManager.shared.isPlaying)
     }
     
-    func miniPlayerDidSwipeLeft() {
+    func miniPlayerNextDidTap() {
         // 다음 곡으로 이동 (셔플/반복 고려)
         if let nextIndex = getNextIndex() {
             if isShuffleOn {
@@ -133,7 +133,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         }
     }
     
-    func miniPlayerDidSwipeRight() {
+    func miniPlayerPreviousDidTap() {
         // 이전 곡으로 이동 (셔플/반복 고려)
         let currentTime = AudioManager.shared.playerCurrentTime
         if currentTime > 1.0 {
