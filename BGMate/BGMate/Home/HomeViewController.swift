@@ -80,7 +80,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
             collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor, constant: -32),
             collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor, constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
-        
+    
         
         
         // Set delegate and data source
@@ -92,7 +92,13 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         collectionView.register(AddCell.self, forCellWithReuseIdentifier: "AddCell")
         
         // Observe notification to reload playlists
+        // ✅ playlistCreated와 playlistUpdated 둘 다 감지 되도록 수정
         NotificationCenter.default.addObserver(self, selector: #selector(reloadPlaylists), name: .playlistCreated, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(reloadPlaylists), name: .playlistUpdated, object: nil)
+    
+    // ✅ 항상 최신 데이터 반영 되도록 내용 추가
+        filteredResults = PlaylistManager.shared.playlists
+        collectionView.reloadData()
     }
     
     // Configure the search bar
@@ -263,5 +269,8 @@ extension HomeViewController: UICollectionViewDataSource {
 }
 
 extension HomeViewController: UICollectionViewDelegate {
-    
+}
+// ✅ Notification 확장 (파일 최상위)수정
+extension Notification.Name {
+    static let playlistUpdated = Notification.Name("playlistUpdated")
 }

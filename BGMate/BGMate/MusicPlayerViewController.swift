@@ -44,7 +44,11 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     
     tableView.rowHeight = UITableView.automaticDimension
     tableView.estimatedRowHeight = 50
-      }
+    // ✅ 제목 레이블에 탭 제스처 추가 (제목 변경 기능)
+    let titleTapGesture = UITapGestureRecognizer(target: self, action: #selector(editPlaylistTitle))
+    titleLabel.isUserInteractionEnabled = true
+    titleLabel.addGestureRecognizer(titleTapGesture)
+    }
     
     /// ✅ 화면에 진입할 때마다 최신 PlaylistManager 데이터를 불러오기
         override func viewWillAppear(_ animated: Bool) {
@@ -128,6 +132,35 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
             constant: MiniPlayerState.shared.isMiniPlayerVisible ? -65 : 0)
         ])
     }
+    
+    // MARK: - 제목 변경 기능 추가
+        @objc private func editPlaylistTitle() {
+            let alert = UIAlertController(title: "플레이리스트 이름 변경",
+                                          message: nil,
+                                          preferredStyle: .alert)
+            alert.addTextField { textField in
+                textField.text = self.musicList.title
+                textField.placeholder = "새 제목을 입력하세요"
+            }
+            alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
+            alert.addAction(UIAlertAction(title: "저장", style: .default, handler: { _ in
+                if let newTitle = alert.textFields?.first?.text, !newTitle.isEmpty {
+                    self.musicList.title = newTitle
+                    
+                    // ✅ PlaylistManager 업데이트
+                    if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
+                        PlaylistManager.shared.playlists[index].title = newTitle
+                    }
+                    PlaylistManager.shared.savePlaylists()
+                    
+                    self.updateUI()
+                    
+                    // ✅ HomeViewController에 변경 알림
+                    NotificationCenter.default.post(name: .playlistUpdated, object: nil)
+                }
+            }))
+            present(alert, animated: true, completion: nil)
+        }
     // MARK: - UI 업데이트
     func updateUI() {
         titleLabel.text = musicList.title
