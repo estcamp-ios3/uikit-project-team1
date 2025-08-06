@@ -23,7 +23,7 @@ class HomeViewController: UIViewController, UISearchBarDelegate {
         let layout = UICollectionViewFlowLayout()
         
         // Configure cell size and spacing
-        layout.itemSize = CGSize(width: 150, height: 180)
+        layout.itemSize = CGSize(width: 150, height: 210)
         layout.minimumLineSpacing = 10
         layout.minimumInteritemSpacing = 5
         
@@ -186,6 +186,7 @@ extension HomeViewController: UICollectionViewDataSource {
             let playlist = filteredResults[indexPath.item - 1]
             cell.flagLabel.image = UIImage(named: playlist.coverImageName ?? "")
             cell.nameLabel.text = playlist.title
+            cell.tagsLabel.text = playlist.selectedTag.count == 1 ? "\(playlist.selectedTag[0])" : "\(playlist.selectedTag[0]) and \(playlist.selectedTag.count - 1) more tags"
             
             if isEditingPlaylists {
                 let deleteIcon = UIImageView(image: UIImage(systemName: "minus.circle.fill"))
