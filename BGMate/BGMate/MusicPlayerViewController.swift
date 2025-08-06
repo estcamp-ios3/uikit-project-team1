@@ -190,7 +190,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         let playerVC = PlayerViewController()
         playerVC.musicList = musicList
         playerVC.currentIndex = 0
-        playerVC.modalPresentationStyle = .fullScreen
+        playerVC.modalPresentationStyle = .overFullScreen
         present(playerVC, animated: true, completion: nil)
     }
     // MARK: - 곡추가 버튼 동작

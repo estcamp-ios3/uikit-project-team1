@@ -175,7 +175,7 @@ class PlayerViewController: UIViewController {
     private var playbackTimer: Timer?
     
     override func viewDidLoad() {
-        self.modalPresentationStyle = .fullScreen
+        self.modalPresentationStyle = .overFullScreen
         super.viewDidLoad()
         view.backgroundColor = .gray
         setupDismissGesture()
@@ -250,10 +250,10 @@ class PlayerViewController: UIViewController {
                 let draggedDistance = touchPoint.y - initialTouchPoint.y
                 view.frame.origin.y = draggedDistance
                 
-                // 스와이프 진행도에 따라 배경 투명도 조절 (뒷배경 보이기 효과)
-                let progress = min(draggedDistance / dismissThreshold, 1.0)
-                let alpha = 1.0 - (progress * 0.3) // 최대 30%까지 투명해짐
-                view.backgroundColor = view.backgroundColor?.withAlphaComponent(alpha)
+//                // 스와이프 진행도에 따라 배경 투명도 조절 (뒷배경 보이기 효과)
+//                let progress = min(draggedDistance / dismissThreshold, 1.0)
+//                let alpha = 1.0 - (progress * 0.3) // 최대 30%까지 투명해짐
+//                view.backgroundColor = view.backgroundColor?.withAlphaComponent(alpha)
             }
         case .ended, .cancelled:
             if touchPoint.y - initialTouchPoint.y > dismissThreshold {

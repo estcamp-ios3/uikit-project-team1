@@ -105,7 +105,7 @@ extension MainTabBarController: MiniPlayerDelegate {
             playerVC.shouldRestartPlayback = true
         }
         
-        playerVC.modalPresentationStyle = .fullScreen
+        playerVC.modalPresentationStyle = .overFullScreen
         playerVC.miniPlayer = miniPlayerVC
         miniPlayerVC.delegate = playerVC
         
