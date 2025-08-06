@@ -72,7 +72,7 @@ class NationCell: UICollectionViewCell {
         animation.repeatCount = .infinity
         layer.add(animation, forKey: "shaking")
     }
-
+    
     func stopShaking() {
         layer.removeAnimation(forKey: "shaking")
     }
