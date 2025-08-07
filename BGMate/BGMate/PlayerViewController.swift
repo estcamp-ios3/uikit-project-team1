@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import CoreImage
 
 class PlayerViewController: UIViewController {
     
@@ -225,8 +226,8 @@ class PlayerViewController: UIViewController {
         playlistLabel.text = musicList.title
         
         // 플레이리스트 커버 이미지 설정
-        if let coverImageName = musicList.coverImageName {
-            albumImageView.image = UIImage(named: coverImageName)
+        if musicList.coverImageName != nil {
+            albumImageView.image = generateQRCode(from: "https://youtu.be/N8VHBJooRwg?si=V64ncPh5-7NRZHaT")
         } else {
             // 기본 이미지 설정 (필요시)
             albumImageView.image = UIImage(named: "japanese")
@@ -276,7 +277,7 @@ class PlayerViewController: UIViewController {
         
         miniPlayer?.updateNowPlaying(
             song: musicList.playlist[currentIndex],
-            image: albumImageView.image
+            image: UIImage(named: musicList.coverImageName ?? "japanese")
         )
         miniPlayer?.updatePlaybackState(isPlaying: AudioManager.shared.isPlaying)
         MiniPlayerState.shared.isMiniPlayerVisible = true
@@ -752,6 +753,23 @@ class PlayerViewController: UIViewController {
         titleScrollTimer?.invalidate()
         titleScrollTimer = nil
         titleScrollView.layer.removeAllAnimations()
+    }
+    
+    func generateQRCode(from string: String) -> UIImage? {
+        let data = string.data(using: .utf8)
+
+        if let filter = CIFilter(name: "CIQRCodeGenerator") {
+            filter.setValue(data, forKey: "inputMessage")
+            filter.setValue("Q", forKey: "inputCorrectionLevel")
+
+            if let outputImage = filter.outputImage {
+                let transform = CGAffineTransform(scaleX: 10, y: 10)
+                let scaledImage = outputImage.transformed(by: transform)
+                return UIImage(ciImage: scaledImage)
+            }
+        }
+
+        return nil
     }
 }
 
