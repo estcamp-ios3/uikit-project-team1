@@ -8,6 +8,78 @@
 import UIKit
 import CoreImage
 
+// MARK: - UIImage 색상 추출 확장 (PlayerViewController용)
+extension UIImage {
+    func getDominantColorForPlayer() -> UIColor? {
+        guard let cgImage = self.cgImage else { return nil }
+        
+        let width = 50
+        let height = 50
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        let bytesPerPixel = 4
+        let bytesPerRow = bytesPerPixel * width
+        let bitsPerComponent = 8
+        
+        var pixelData = [UInt8](repeating: 0, count: width * height * bytesPerPixel)
+        
+        guard let context = CGContext(
+            data: &pixelData,
+            width: width,
+            height: height,
+            bitsPerComponent: bitsPerComponent,
+            bytesPerRow: bytesPerRow,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else { return nil }
+        
+        context.draw(cgImage, in: CGRect(x: 0, y: 0, width: width, height: height))
+        
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var pixelCount: CGFloat = 0
+        
+        for i in stride(from: 0, to: pixelData.count, by: bytesPerPixel) {
+            let r = CGFloat(pixelData[i]) / 255.0
+            let g = CGFloat(pixelData[i + 1]) / 255.0
+            let b = CGFloat(pixelData[i + 2]) / 255.0
+            let a = CGFloat(pixelData[i + 3]) / 255.0
+            
+            if a > 0.1 {
+                red += r
+                green += g
+                blue += b
+                pixelCount += 1
+            }
+        }
+        
+        guard pixelCount > 0 else { return UIColor.gray }
+        
+        red /= pixelCount
+        green /= pixelCount
+        blue /= pixelCount
+        
+        return UIColor(red: red, green: green, blue: blue, alpha: 1.0)
+    }
+    
+    func getVibrantColorForPlayer() -> UIColor? {
+        guard let dominantColor = getDominantColorForPlayer() else { return nil }
+        
+        var hue: CGFloat = 0
+        var saturation: CGFloat = 0
+        var brightness: CGFloat = 0
+        var alpha: CGFloat = 0
+        
+        dominantColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+        
+        // PlayerViewController용으로 좀 더 어둡게 조정 (가독성을 위해)
+        let adjustedSaturation = min(saturation * 1.2, 1.0)
+        let adjustedBrightness = max(min(brightness * 0.6, 0.7), 0.2)
+        
+        return UIColor(hue: hue, saturation: adjustedSaturation, brightness: adjustedBrightness, alpha: alpha)
+    }
+}
+
 class PlayerViewController: UIViewController {
     
     // 외부에서 받을 음악 리스트와 현재 인덱스
@@ -489,6 +561,9 @@ class PlayerViewController: UIViewController {
         titleLabel.text = musicList.playlist[currentIndex].title
         artistLabel.text = musicList.playlist[currentIndex].artist
         
+        // 앨범 이미지에서 색상 추출해서 배경색 변경
+        updatePlayerBackgroundColor(from: albumImageView.image)
+        
         // 레이아웃이 완료된 후 스크롤링 애니메이션 시작
         DispatchQueue.main.async { [weak self] in
             self?.startTitleScrollingIfNeeded()
@@ -519,6 +594,9 @@ class PlayerViewController: UIViewController {
         // UI 업데이트만 수행
         titleLabel.text = musicList.playlist[currentIndex].title
         artistLabel.text = musicList.playlist[currentIndex].artist
+        
+        // 앨범 이미지에서 색상 추출해서 배경색 변경 (UI만 업데이트할 때도)
+        updatePlayerBackgroundColor(from: albumImageView.image)
         
         // 레이아웃이 완료된 후 스크롤링 애니메이션 시작
         DispatchQueue.main.async { [weak self] in
@@ -753,6 +831,31 @@ class PlayerViewController: UIViewController {
         titleScrollTimer?.invalidate()
         titleScrollTimer = nil
         titleScrollView.layer.removeAllAnimations()
+    }
+    
+    // MARK: - 배경색 업데이트 (PlayerViewController용)
+    private func updatePlayerBackgroundColor(from image: UIImage?) {
+        guard let image = image else {
+            // 이미지가 없으면 기본 색상으로 설정
+            animatePlayerBackgroundColor(to: .systemGray)
+            return
+        }
+        
+        // 백그라운드 큐에서 색상 추출 (메인 스레드 블로킹 방지)
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            let extractedColor = image.getVibrantColorForPlayer() ?? image.getDominantColorForPlayer() ?? .systemGray
+            
+            // 메인 스레드에서 UI 업데이트
+            DispatchQueue.main.async {
+                self?.animatePlayerBackgroundColor(to: extractedColor)
+            }
+        }
+    }
+    
+    private func animatePlayerBackgroundColor(to color: UIColor) {
+        UIView.animate(withDuration: 0.6, delay: 0, options: [.curveEaseInOut], animations: {
+            self.view.backgroundColor = color
+        })
     }
     
     func generateQRCode(from string: String) -> UIImage? {
