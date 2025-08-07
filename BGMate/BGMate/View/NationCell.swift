@@ -35,6 +35,13 @@ class NationCell: UICollectionViewCell {
         image.translatesAutoresizingMaskIntoConstraints = false
         return image
     }()
+    let deleteIcon: UIImageView = {
+        let image = UIImageView()
+        image.image = UIImage(systemName: "minus.circle.fill")
+        image.tintColor = .red
+        image.translatesAutoresizingMaskIntoConstraints = false
+        return image
+    }()
     
     override init(frame: CGRect) {
         
@@ -44,6 +51,9 @@ class NationCell: UICollectionViewCell {
         self.contentView.addSubview(flagLabel)
         self.contentView.addSubview(nameLabel)
         self.contentView.addSubview(tagsLabel)
+        self.contentView.addSubview(deleteIcon)
+        
+        deleteIcon.isHidden = true
         
         // Set up Auto Layout constraints
         NSLayoutConstraint.activate([
@@ -59,12 +69,19 @@ class NationCell: UICollectionViewCell {
             tagsLabel.topAnchor.constraint(equalTo: nameLabel.bottomAnchor, constant: 5),
             tagsLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 5),
             tagsLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -5),
-            tagsLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -5)
+            tagsLabel.bottomAnchor.constraint(lessThanOrEqualTo: contentView.bottomAnchor, constant: -5),
+            
+            deleteIcon.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 4),
+            deleteIcon.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 4),
+            deleteIcon.widthAnchor.constraint(equalToConstant: 25),
+            deleteIcon.heightAnchor.constraint(equalToConstant: 25),
         ])
         
     }
     
     func startShaking() {
+        deleteIcon.isHidden = false
+
         let animation = CAKeyframeAnimation(keyPath: "transform.rotation")
         animation.values = [-0.03, 0.03, -0.03]
         animation.autoreverses = true
@@ -74,6 +91,8 @@ class NationCell: UICollectionViewCell {
     }
     
     func stopShaking() {
+        deleteIcon.isHidden = true
+
         layer.removeAnimation(forKey: "shaking")
     }
     
