@@ -10,7 +10,7 @@ import Combine
 
 class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout, UITextFieldDelegate {
     private var selectedCategories: [Tags] = []
-    var displayTagList: [Tags] = []
+    private var displayTagList: [Tags] = []
     
     private let closeButton: UIButton = {
         let config = UIButton.Configuration.plain() // 기본 스타일
@@ -93,6 +93,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         
         return button
     }()
+    private var createButtonBottomConstraint: NSLayoutConstraint!
     
     private var collectionView: UICollectionView!
     
@@ -100,31 +101,32 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         super.viewDidLoad()
         view.backgroundColor = .systemBackground
         
-        nameTextField.delegate = self  // ✅ Validation 델리게이트 지정
+        nameTextField.delegate = self  // Validation 델리게이트 지정
         
-        //  ✅ songs.tags 문자열이 포함되지 않을 TagList 필터링
+        //  songs.tags 문자열이 포함되지 않을 TagList 필터링
         let allSongTags = Set(songs.flatMap { $0.tags })
-            displayTagList = tagList.filter { allSongTags.contains($0.tags) }
+        displayTagList = tagList.filter { allSongTags.contains($0.tags) }
         
         setLayout()
-    }
-    
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
-        nameTextField.becomeFirstResponder() // 화면 뜨자마자 키보드 활성화
+        
+        // // 텍스트필드에 툴바 추가
+        // KeyboardManager.addCloseButtonToolbar(to: nameTextField, target: self, action: #selector(hideKeyboardFromScreen))
+        
+        // 배경 탭 시 키보드 내리기
+        KeyboardManager.enableTapToDismiss(in: self)
+        
     }
     
     // MARK: - Layout
     private func setLayout() {
         view.addSubview(closeButton)
         view.addSubview(modalLabel)
-        view.addSubview(nameTextField)
         view.addSubview(infoLabel)
         
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .vertical
-        //        layout.minimumLineSpacing = 10 //줄(정렬 축) 간격
-        //        layout.minimumInteritemSpacing = 10  //셀(교차축) 간격
+        // layout.minimumLineSpacing = 10 //줄(정렬 축) 간격
+        // layout.minimumInteritemSpacing = 10  //셀(교차축) 간격
         
         let itemWidth = (UIScreen.main.bounds.width - 16 * 2 - 10 * 2) / 3 // 3열, 좌우 여백(16) 및 아이템 간 여백(10)
         layout.itemSize = CGSize(width: itemWidth, height: itemWidth + 20) // 이미지 + 텍스트 공간
@@ -138,6 +140,7 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         collectionView.allowsMultipleSelection = true
         
         view.addSubview(collectionView)
+        view.addSubview(nameTextField)
         view.addSubview(createButton)
         
         let safeArea = view.safeAreaLayoutGuide
@@ -150,20 +153,19 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             modalLabel.topAnchor.constraint(equalTo: safeArea.topAnchor, constant: 20),
             modalLabel.centerXAnchor.constraint(equalTo: safeArea.centerXAnchor),
             
-            nameTextField.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 16),
-            nameTextField.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
-            nameTextField.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
-            nameTextField.heightAnchor.constraint(equalToConstant: 44),
-            
-            infoLabel.topAnchor.constraint(equalTo: nameTextField.bottomAnchor, constant: 16),
+            infoLabel.topAnchor.constraint(equalTo: modalLabel.bottomAnchor, constant: 16),
             infoLabel.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
             infoLabel.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
-            
             
             collectionView.topAnchor.constraint(equalTo: infoLabel.bottomAnchor, constant: 8),
             collectionView.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
             collectionView.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
-            collectionView.bottomAnchor.constraint(equalTo: createButton.topAnchor, constant: -16),
+            collectionView.bottomAnchor.constraint(equalTo: nameTextField.topAnchor, constant: -16),
+            
+            nameTextField.bottomAnchor.constraint(equalTo: createButton.topAnchor, constant: -10),
+            nameTextField.leadingAnchor.constraint(equalTo: safeArea.leadingAnchor, constant: 16),
+            nameTextField.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -16),
+            nameTextField.heightAnchor.constraint(equalToConstant: 44),
             
             createButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             createButton.bottomAnchor.constraint(equalTo: view.keyboardLayoutGuide.topAnchor, constant: -20),
@@ -172,10 +174,20 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         ])
         
         closeButton.addAction(UIAction { [weak self] _ in self?.didTapClose() }, for: .touchUpInside)
-        createButton.addAction(UIAction { [weak self] _ in self?.didTapCreate() }, for: .touchUpInside)
+        createButton.addAction(UIAction { [weak self] _ in
+            guard let self = self else { return }
+            self.view.endEditing(true) // 먼저 키보드 닫기
+            
+            // 키보드 닫히는 시간 약간 기다렸다가 실행 (0.1초 딜레이)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                self.didTapCreate()
+            }
+        }, for: .touchUpInside)
+        
     }
     
     
+    //MARK: - collectionView DataSource
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return displayTagList.count
     }
@@ -215,42 +227,19 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
     func textField(_ textField: UITextField,
                    shouldChangeCharactersIn range: NSRange,
                    replacementString string: String) -> Bool {
-        
-        // 현재 입력된 텍스트
         let currentText = textField.text ?? ""
-        guard let stringRange = Range(range, in: currentText) else { return false }
-        let updatedText = currentText.replacingCharacters(in: stringRange, with: string)
-        
-        // 한글 포함 여부 판단
-        let containsHangul = updatedText.contains {
-            $0.unicodeScalars.contains { !$0.isASCII && $0.properties.isAlphabetic }
-        }
-        
-        // 글자 수 제한
-        let maxCount = containsHangul ? 12 : 22
-        guard updatedText.count <= maxCount else { return false }
-        
-        // 삭제 이벤트는 항상 허용
-        if string.isEmpty { return true }
-        
-        // 한글 조합 중 입력 허용
-        if string.unicodeScalars.count == 1,
-           string.unicodeScalars.first?.properties.isAlphabetic == true {
-            return true
-        }
-        
-        // 허용된 문자만 입력 가능
-        let allowedCharacterSet = CharacterSet(
-            charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789가-힣 _-!@#$%^&*()+~`|[]{}\":;'<>?,./"
-        )
-        let inputCharacterSet = CharacterSet(charactersIn: string)
-        return allowedCharacterSet.isSuperset(of: inputCharacterSet)
+        return TextFieldValidator.isValidInput(currentText: currentText, range: range, replacementString: string)
     }
     
     
-    // MARK: - Return key handling: UITextFieldDelegate 프로토콜에서 제공
+    // MARK: - key & keyboard handling
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder() // 키보드 닫기
+        
+        // 사용자가 Return 눌러서도 생성 가능
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            self.didTapCreate()
+        }
         return true
     }
     
@@ -281,7 +270,6 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
             return
         }
         
-        
         // 태그가 겹치는 곡들 필터링
         let filteredSongs = songs.filter { song in
             !Set(song.tags).isDisjoint(with: selectedTagStrings)
@@ -299,5 +287,12 @@ class CreatePlaylistViewController: UIViewController, UICollectionViewDataSource
         
         // 홈으로 돌아가기
         dismiss(animated: true)
+    }
+}
+
+// MARK: - KeyboardManager 재사용-연결하기
+extension UIViewController {
+    @objc func hideKeyboardFromScreen() {
+        view.endEditing(true)
     }
 }
