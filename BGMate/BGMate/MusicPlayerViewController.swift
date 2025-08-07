@@ -135,33 +135,69 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     }
     
     // MARK: - 제목 변경 기능 추가
-        @objc private func editPlaylistTitle() {
-            let alert = UIAlertController(title: "플레이리스트 이름 변경",
-                                          message: nil,
-                                          preferredStyle: .alert)
-            alert.addTextField { textField in
-                textField.text = self.musicList.title
-                textField.placeholder = "새 제목을 입력하세요"
-            }
-            alert.addAction(UIAlertAction(title: "취소", style: .cancel, handler: nil))
-            alert.addAction(UIAlertAction(title: "저장", style: .default, handler: { _ in
-                if let newTitle = alert.textFields?.first?.text, !newTitle.isEmpty {
-                    self.musicList.title = newTitle
-                    
-                    // ✅ PlaylistManager 업데이트
-                    if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
-                        PlaylistManager.shared.playlists[index].title = newTitle
-                    }
-                    PlaylistManager.shared.savePlaylists()
-                    
-                    self.updateUI()
-                    
-                    // ✅ HomeViewController에 변경 알림
-                    NotificationCenter.default.post(name: .playlistUpdated, object: nil)
-                }
-            }))
-            present(alert, animated: true, completion: nil)
+    @objc private func editPlaylistTitle() {
+        let alertController = UIAlertController(title: "플레이리스트 이름 변경", message: nil, preferredStyle: .alert)
+        
+        alertController.addTextField { textField in
+            textField.text = self.musicList.title
+            textField.placeholder = "새 제목을 입력하세요"
         }
+
+        // ✅ 취소 버튼 (왼쪽, 강조되지 않음)
+        let cancelAction = UIAlertAction(title: "취소", style: .default) { _ in
+            alertController.dismiss(animated: true, completion: nil)
+        }
+        alertController.addAction(cancelAction)
+
+        // ✅ 저장 버튼 (오른쪽, 강조됨)
+        let saveAction = UIAlertAction(title: "저장", style: .cancel) { _ in
+            guard let newTitle = alertController.textFields?.first?.text,
+                  !newTitle.isEmpty else { return }
+
+            self.musicList.title = newTitle
+
+            if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
+                PlaylistManager.shared.playlists[index].title = newTitle
+            }
+
+            PlaylistManager.shared.savePlaylists()
+            self.updateUI()
+
+            NotificationCenter.default.post(name: .playlistUpdated, object: nil)
+        }
+        alertController.addAction(saveAction)
+
+        present(alertController, animated: true, completion: nil)
+    }
+    //        @objc private func editPlaylistTitle() {
+//            let alert = UIAlertController(title: "플레이리스트 이름 변경", message: nil, preferredStyle: .alert)
+//            
+//            alert.addTextField { textField in
+//                textField.text = self.musicList.title
+//                textField.placeholder = "새 제목을 입력하세요"
+//            }
+//            alert.addAction(UIAlertAction(title: "저장", style: .default, handler: { _ in
+//                   if let newTitle = alert.textFields?.first?.text, !newTitle.isEmpty {
+//                       self.musicList.title = newTitle
+//            
+//            
+//                    
+//                    // ✅ PlaylistManager 업데이트
+//                    if let index = PlaylistManager.shared.playlists.firstIndex(where: { $0.id == self.musicList.id }) {
+//                        PlaylistManager.shared.playlists[index].title = newTitle
+//                    }
+//                    PlaylistManager.shared.savePlaylists()
+//                    
+//                    self.updateUI()
+//                    
+//                    // ✅ HomeViewController에 변경 알림
+//                    NotificationCenter.default.post(name: .playlistUpdated, object: nil)
+//                }
+//            }))
+//            alert.addAction(UIAlertAction(title: "취소", style: .default, handler: nil))
+//            
+//            present(alert, animated: true, completion: nil)
+//        }
     // MARK: - UI 업데이트
     func updateUI() {
         titleLabel.text = musicList.title
