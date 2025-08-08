@@ -12,19 +12,22 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
     
     // MARK: - Background Blur & Color
     private let backgroundImageView: UIImageView = {
-            let iv = UIImageView()
-            iv.contentMode = .scaleAspectFill
-            iv.clipsToBounds = true
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
         iv.alpha = 0.7
-            iv.translatesAutoresizingMaskIntoConstraints = false
-            return iv
-        }()
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        return iv
+    }()
     private let blurEffectView: UIVisualEffectView = {
         let blur = UIBlurEffect(style: .systemUltraThinMaterial)
         let bv = UIVisualEffectView(effect: blur)
         bv.translatesAutoresizingMaskIntoConstraints = false
         return bv
-        }()
+    }()
+    
+    // MARK: - 텍스트 가독성용 동적 색상
+    private var dynamicTextColor: UIColor = .label
     
     // MARK: - 상단 바 버튼 아이템
     private lazy var editBarButtonItem: UIBarButtonItem = {
@@ -72,21 +75,21 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         super.viewDidLoad()
         
         // Background 뷰 설정
-                view.addSubview(backgroundImageView)
-                NSLayoutConstraint.activate([
-                    backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
-                    backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                    backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                    backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                ])
-                view.addSubview(blurEffectView)
-                NSLayoutConstraint.activate([
-                    blurEffectView.topAnchor.constraint(equalTo: view.topAnchor),
-                    blurEffectView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-                    blurEffectView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-                    blurEffectView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-                ])
-                view.sendSubviewToBack(backgroundImageView)
+        view.addSubview(backgroundImageView)
+        NSLayoutConstraint.activate([
+            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+        ])
+        view.addSubview(blurEffectView)
+        NSLayoutConstraint.activate([
+            blurEffectView.topAnchor.constraint(equalTo: backgroundImageView.topAnchor),
+            blurEffectView.bottomAnchor.constraint(equalTo: backgroundImageView.bottomAnchor),
+            blurEffectView.leadingAnchor.constraint(equalTo: backgroundImageView.leadingAnchor),
+            blurEffectView.trailingAnchor.constraint(equalTo: backgroundImageView.trailingAnchor),
+        ])
+        view.sendSubviewToBack(backgroundImageView)
         
         view.backgroundColor = .systemBackground
         setupUI()
@@ -126,7 +129,6 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         imageView.clipsToBounds = true
         
         titleLabel.font = .systemFont(ofSize: 22, weight: .semibold)
-        titleLabel.textColor = .label
         titleLabel.numberOfLines = 0
         titleLabel.adjustsFontSizeToFitWidth = true
         titleLabel.minimumScaleFactor = 0.7
@@ -182,6 +184,21 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         let coverImage = UIImage(named: musicList.coverImageName ?? "default_cover")
         imageView.image = coverImage
         
+        // 텍스트 가독성 위한 색상 결정
+        if let img = coverImage, let dominant = img.getDominantColor() {
+            var hue: CGFloat = 0, saturation: CGFloat = 0, brightness: CGFloat = 0, alpha: CGFloat = 0
+            dominant.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+            dynamicTextColor = brightness < 0.5 ? .white : .label
+        } else {
+            dynamicTextColor = .label
+        }
+        
+        titleLabel.textColor = dynamicTextColor
+        tagsLabel.textColor = dynamicTextColor.withAlphaComponent(0.7)
+        titleLabel.text = musicList.title
+        tagsLabel.text = musicList.selectedTag.joined(separator: ", ")
+        tagsLabel.isHidden = musicList.selectedTag.isEmpty
+        
         // 배경 이미지 업데이트
         backgroundImageView.image = coverImage
         
@@ -197,6 +214,8 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         playAllButton.isEnabled = hasSongs && !editing
         playAllButton.backgroundColor = playAllButton.isEnabled ? .systemBlue : .systemGray4
         addTrackButton.isEnabled = !editing
+        
+        
     }
     
     // MARK: - 테이블뷰 데이터소스 & 델리게이트
@@ -209,6 +228,7 @@ class MusicPlayerViewController: UIViewController, UITableViewDelegate, UITableV
         let song = musicList.playlist[indexPath.row]
         var content = cell.defaultContentConfiguration()
         content.text = "\(song.title) - \(song.artist)"
+        content.textProperties.color = dynamicTextColor
         cell.contentConfiguration = content
         
         cell.backgroundColor = .clear
