@@ -10,31 +10,45 @@ import CoreImage
 
 class PlayerViewController: UIViewController {
     
-    // 외부에서 받을 음악 리스트와 현재 인덱스
+    // MARK: - 프로퍼티
+    
+    /// 외부에서 받을 음악 리스트와 현재 인덱스
     var musicList: Playlist!
     var currentIndex: Int = 0
-    var shouldRestartPlayback: Bool = true  // 재생을 다시 시작할지 여부
+    /// 재생을 다시 시작할지 여부 (미니플레이어에서 전환 시 false)
+    var shouldRestartPlayback: Bool = true
     
     // MARK: - 미니플레이어 관련 프로퍼티
     weak var miniPlayer: MiniPlayerViewController?
     private var initialTouchPoint: CGPoint = CGPoint(x: 0, y: 0)
     private let dismissThreshold: CGFloat = 200
     
-    // 셔플, 반복 상태
+    // MARK: - 재생 모드 관련 프로퍼티
+    /// 셔플 모드 활성화 상태
     private var isShuffleOn: Bool = false
+    /// 반복 모드 활성화 상태
     private var isRepeatOn: Bool = false
     
-    // 셔플된 재생 순서를 저장할 배열
+    /// 셔플된 재생 순서를 저장할 배열
     private var shuffledIndices: [Int] = []
-    
-    // 재생 히스토리를 저장할 배열
+    /// 원본 셔플 순서를 저장할 배열
+    private var originalShuffledIndices: [Int] = []
+    /// 재생 히스토리를 저장할 배열
     private var playHistory: [Int] = []
     
-    // 텍스트 스크롤링 애니메이션 관련
+    // MARK: - 텍스트 스크롤링 관련 프로퍼티
+    /// 타이틀 스크롤링 타이머
     private var titleScrollTimer: Timer?
+    /// 스크롤링 진행 중 여부
     private var isScrollingTitle = false
     
-    // 상단 드롭다운 화살표 (닫기용)
+    // MARK: - 재생 관련 프로퍼티
+    /// 재생 진행 상태 업데이트 타이머
+    private var playbackTimer: Timer?
+    
+    // MARK: - UI 컴포넌트
+    
+    /// 상단 드롭다운 화살표 (닫기용)
     private let dismissButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitle("⌄", for: .normal)
@@ -44,7 +58,7 @@ class PlayerViewController: UIViewController {
         return button
     }()
 
-    // 플레이리스트/상단 제목
+    /// 플레이리스트/상단 제목
     private let playlistLabel: UILabel = {
         let label = UILabel()
         label.text = "" // 실제 플레이리스트 제목으로 동적으로 설정
@@ -55,7 +69,7 @@ class PlayerViewController: UIViewController {
         return label
     }()
 
-    // 앨범커버 이미지
+    /// 앨범커버 이미지 (QR 코드)
     private let albumImageView: UIImageView = {
         let imageView = UIImageView()
         // 예시 이미지, 실제는 네트워크 또는 Assets에서 교체
@@ -67,7 +81,7 @@ class PlayerViewController: UIViewController {
         return imageView
     }()
 
-    // 제목을 위한 스크롤 가능한 컨테이너
+    /// 제목을 위한 스크롤 가능한 컨테이너
     private let titleScrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
@@ -77,30 +91,30 @@ class PlayerViewController: UIViewController {
         return scrollView
     }()
     
-    // 곡명
+    /// 곡명
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.text = "answer"
         label.font = .boldSystemFont(ofSize: 28)
-        label.textColor = .white
+        label.textColor = .label
         label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         label.numberOfLines = 1
         return label
     }()
 
-    // 아티스트
+    /// 아티스트
     private let artistLabel: UILabel = {
         let label = UILabel()
         label.text = ""
         label.font = .systemFont(ofSize: 20, weight: .regular)
-        label.textColor = .white.withAlphaComponent(0.8)
+        label.textColor = .secondaryLabel
         label.textAlignment = .left
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
 
-    // 재생 슬라이더
+    /// 재생 슬라이더
     private let progressSlider: UISlider = {
         let slider = UISlider()
         slider.value = 0.15
@@ -111,7 +125,7 @@ class PlayerViewController: UIViewController {
         return slider
     }()
 
-    // 현재시간/총시간 라벨
+    /// 현재시간 라벨
     private let currentTimeLabel: UILabel = {
         let label = UILabel()
         label.text = "0:26"
@@ -120,6 +134,7 @@ class PlayerViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    /// 총시간 라벨
     private let durationLabel: UILabel = {
         let label = UILabel()
         label.text = "-2:51"
@@ -130,7 +145,7 @@ class PlayerViewController: UIViewController {
         return label
     }()
 
-    // 컨트롤 버튼 (이전/재생/다음)
+    /// 재생/일시정지 버튼
     private let playButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "pause.fill"), for: .normal)
@@ -141,6 +156,7 @@ class PlayerViewController: UIViewController {
         button.clipsToBounds = true
         return button
     }()
+    /// 이전 곡 버튼
     private let prevButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "backward.fill"), for: .normal)
@@ -149,6 +165,7 @@ class PlayerViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    /// 다음 곡 버튼
     private let nextButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "forward.fill"), for: .normal)
@@ -157,6 +174,7 @@ class PlayerViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    /// 셔플 모드 버튼
     private let shuffleButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "shuffle"), for: .normal)
@@ -164,6 +182,7 @@ class PlayerViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    /// 반복 모드 버튼
     private let repeatButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "repeat"), for: .normal)
@@ -172,13 +191,34 @@ class PlayerViewController: UIViewController {
         return button
     }()
     
-    // 타이머로 재생 위치 갱신
-    private var playbackTimer: Timer?
+
+    
+    // MARK: - 배경 관련 컴포넌트
+    
+    /// 배경 이미지 뷰 (플레이리스트 커버 이미지)
+    private let backgroundImageView: UIImageView = {
+        let iv = UIImageView()
+        iv.contentMode = .scaleAspectFill
+        iv.clipsToBounds = true
+        iv.alpha = 0.7
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        return iv
+    }()
+
+    /// 블러 효과 뷰
+    private let blurEffectView: UIVisualEffectView = {
+        let blur = UIBlurEffect(style: .systemUltraThinMaterial)
+        let bv = UIVisualEffectView(effect: blur)
+        bv.translatesAutoresizingMaskIntoConstraints = false
+        return bv
+    }()
+    
+    // MARK: - 라이프사이클 메소드
     
     override func viewDidLoad() {
         self.modalPresentationStyle = .overFullScreen
         super.viewDidLoad()
-        view.backgroundColor = .gray
+        view.backgroundColor = .white
         setupDismissGesture()
         setupUI()
         setupActions()
@@ -186,6 +226,7 @@ class PlayerViewController: UIViewController {
         
         // 플레이리스트 정보 업데이트
         updatePlaylistInfo()
+        updateBackgroundImage() // optional
         
         // musicList와 currentIndex가 세팅되어 있으면 해당 곡 재생 (shouldRestartPlayback 확인)
         if !musicList.playlist.isEmpty && currentIndex < musicList.playlist.count {
@@ -211,6 +252,9 @@ class PlayerViewController: UIViewController {
         }
     }
     
+    // MARK: - 초기 설정 메소드
+    
+    /// 알림 설정
     private func setupNotifications() {
         // 재생 완료 알림
         NotificationCenter.default.addObserver(self,
@@ -218,7 +262,7 @@ class PlayerViewController: UIViewController {
         name: .AVPlayerItemDidPlayToEndTime, object: nil)
     }
     
-    // MARK: - 플레이리스트 정보 업데이트
+    /// 플레이리스트 정보 업데이트
     private func updatePlaylistInfo() {
         guard musicList != nil else { return }
         
@@ -235,11 +279,14 @@ class PlayerViewController: UIViewController {
     }
     
     // MARK: - 제스처 관련 메서드
+    
+    /// 닫기 제스처 설정
     private func setupDismissGesture() {
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handleDismissPan(_:)))
         view.addGestureRecognizer(panGesture)
     }
     
+    /// 닫기 제스처 처리
     @objc private func handleDismissPan(_ gesture: UIPanGestureRecognizer) {
         let touchPoint = gesture.location(in: view.window)
         
@@ -271,6 +318,8 @@ class PlayerViewController: UIViewController {
     }
     
     // MARK: - 미니플레이어 관련 메서드
+    
+    /// 미니플레이어로 전환
     private func minimizeToMiniPlayer() {
         // 풀스크린 애니메이션 정지
         stopTitleScrolling()
@@ -292,6 +341,7 @@ class PlayerViewController: UIViewController {
         dismiss(animated: true)
     }
     
+    /// 재생 완료 처리
     @objc private func handlePlaybackFinished() {
         if let nextIndex = getNextIndex() {
             if isShuffleOn {
@@ -305,7 +355,22 @@ class PlayerViewController: UIViewController {
         }
     }
     
+    /// UI 컴포넌트 설정
     private func setupUI() {
+        // ADD: 배경 먼저 추가
+        view.addSubview(backgroundImageView)
+        view.addSubview(blurEffectView)
+        NSLayoutConstraint.activate([
+            backgroundImageView.topAnchor.constraint(equalTo: view.topAnchor),
+            backgroundImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            backgroundImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            backgroundImageView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            blurEffectView.topAnchor.constraint(equalTo: view.topAnchor),
+            blurEffectView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            blurEffectView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            blurEffectView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+        ])
+
         // 상단 dismiss
         view.addSubview(dismissButton)
         view.addSubview(playlistLabel)
@@ -389,6 +454,7 @@ class PlayerViewController: UIViewController {
         playButton.heightAnchor.constraint(equalToConstant: 70).isActive = true
     }
     
+    /// 버튼 액션 설정
     private func setupActions() {
         dismissButton.addTarget(self, action: #selector(dismissTapped), for: .touchUpInside)
         playButton.addTarget(self, action: #selector(playTapped), for: .touchUpInside)
@@ -399,10 +465,11 @@ class PlayerViewController: UIViewController {
         progressSlider.addTarget(self, action: #selector(sliderValueChanged), for: .valueChanged)
     }
     
-    // 셔플 순서 생성 (첫 곡 제외)
-    // 원본 셔플 순서를 저장할 배열 추가
-    private var originalShuffledIndices: [Int] = []
+
     
+    // MARK: - 재생 모드 관련 메소드
+    
+    /// 셔플 순서 생성 (첫 곡 제외)
     private func createShuffledIndices() {
         // 현재 곡을 제외한 나머지 곡들의 인덱스로 배열 생성
         let indices = Array(0..<musicList.playlist.count).filter { $0 != currentIndex }
@@ -420,12 +487,15 @@ class PlayerViewController: UIViewController {
         shuffledIndices = shuffled
     }
         
+    // MARK: - 버튼 액션 메소드
+    
+    /// 닫기 버튼 액션
     @objc private func dismissTapped() {
         stopPlaybackTimer()
         stopTitleScrolling()
         minimizeToMiniPlayer()
     }
-    // 플레이 중 이면 pause 버튼 형태로 보여주고, 반대로 pause 상태면 play버튼으로 보여줌
+    /// 재생/일시정지 버튼 액션
     @objc private func playTapped() {
         if AudioManager.shared.isPlaying {
             AudioManager.shared.pause()
@@ -435,7 +505,7 @@ class PlayerViewController: UIViewController {
             playButton.setImage(UIImage(systemName: "pause.fill"), for: .normal)
         }
     }
-    // shuffle, repeat 실행전 투명도 0.4, 실행시 full white color
+    /// 셔플 버튼 액션
     @objc private func shuffleTapped() {
         isShuffleOn.toggle()
         UIView.animate(withDuration: 0.4) {
@@ -459,6 +529,7 @@ class PlayerViewController: UIViewController {
         // MainTabBarController와 상태 동기화
         syncWithMainTabBarController()
     }
+    /// 반복 버튼 액션
     @objc private func repeatTapped() {
         isRepeatOn.toggle()
         UIView.animate(withDuration: 0.4) {
@@ -488,6 +559,7 @@ class PlayerViewController: UIViewController {
         // UI 업데이트
         titleLabel.text = musicList.playlist[currentIndex].title
         artistLabel.text = musicList.playlist[currentIndex].artist
+        updateBackgroundImage() // ADD
         
         // 레이아웃이 완료된 후 스크롤링 애니메이션 시작
         DispatchQueue.main.async { [weak self] in
@@ -519,6 +591,7 @@ class PlayerViewController: UIViewController {
         // UI 업데이트만 수행
         titleLabel.text = musicList.playlist[currentIndex].title
         artistLabel.text = musicList.playlist[currentIndex].artist
+        updateBackgroundImage() 
         
         // 레이아웃이 완료된 후 스크롤링 애니메이션 시작
         DispatchQueue.main.async { [weak self] in
@@ -781,6 +854,71 @@ class PlayerViewController: UIViewController {
         }
 
         return nil
+    }
+
+    // MARK: - Background Image Update
+    private func updateBackgroundImage() {
+        // 플레이리스트 커버 이미지 가져오기
+        guard let coverImageName = musicList.coverImageName,
+              let coverImage = UIImage(named: coverImageName) else {
+            return
+        }
+        
+        // 배경 이미지 설정 (크로스 디졸브 애니메이션 적용)
+        UIView.transition(with: backgroundImageView, duration: 0.3, options: .transitionCrossDissolve) {
+            self.backgroundImageView.image = coverImage
+        }
+        
+        // 배경 색상 추출 및 적용 (비동기 처리)
+        DispatchQueue.global(qos: .userInitiated).async {
+            // 플레이리스트 커버 이미지에서 안전한 색상 추출
+            let extractedColor = coverImage.getSafeColorForPlayer()
+            
+            DispatchQueue.main.async {
+                // 추출한 색상으로 배경 색상 변경
+                UIView.animate(withDuration: 0.3) {
+                    self.view.backgroundColor = extractedColor
+                }
+            }
+        }
+    }
+}
+
+// MARK: - UIImage 색상 추출 확장 (PlayerViewController용)
+extension UIImage {
+    // 텍스트 가독성을 위한 안전한 색상 추출 (PlayerViewController용)
+    func getSafeColorForPlayer() -> UIColor {
+        // MiniPlayerViewController에 이미 정의된 메소드 활용
+        // 먼저 생동감 있는 색상 시도
+        if let vibrantColor = getVibrantColor() {
+            var brightness: CGFloat = 0
+            vibrantColor.getHue(nil, saturation: nil, brightness: &brightness, alpha: nil)
+            
+            // 밝기가 충분하면 사용
+            if brightness >= 0.5 {
+                return vibrantColor
+            }
+        }
+        
+        // 생동감 있는 색상이 너무 어두우면 주요 색상 시도
+        if let dominantColor = getDominantColor() {
+            var hue: CGFloat = 0
+            var saturation: CGFloat = 0
+            var brightness: CGFloat = 0
+            var alpha: CGFloat = 0
+            
+            dominantColor.getHue(&hue, saturation: &saturation, brightness: &brightness, alpha: &alpha)
+            
+            // 강제로 밝고 연하게 조정 (PlayerVC용으로 약간 더 밝게)
+            let safeSaturation = min(saturation * 0.5, 0.6)
+            let safeBrightness = max(brightness * 1.6, 0.75)
+            let finalBrightness = min(safeBrightness, 0.9)
+            
+            return UIColor(hue: hue, saturation: safeSaturation, brightness: finalBrightness, alpha: alpha)
+        }
+        
+        // 모든 시도가 실패하면 기본 연한 회색
+        return UIColor.systemGray4
     }
 }
 

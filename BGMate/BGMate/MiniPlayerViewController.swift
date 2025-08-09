@@ -9,16 +9,40 @@ import UIKit
 
 
 
+/// 미니플레이어 이벤트 처리를 위한 델리게이트 프로토콜
 protocol MiniPlayerDelegate: AnyObject {
+    /// 미니플레이어 탭 이벤트 (전체화면으로 전환)
     func miniPlayerDidTap()
+    /// 재생/일시정지 버튼 탭 이벤트
     func miniPlayerPlayPauseDidTap()
+    /// 이전 곡 버튼 탭 이벤트
     func miniPlayerPreviousDidTap()
+    /// 다음 곡 버튼 탭 이벤트
     func miniPlayerNextDidTap()
 }
 
 class MiniPlayerViewController: UIViewController {
     
-    // MARK: - UI 구성요소
+    // MARK: - 프로퍼티
+    
+    /// 델리게이트 (PlayerViewController 또는 MainTabBarController)
+    weak var delegate: MiniPlayerDelegate?
+    
+    /// 현재 재생 중인 곡 정보
+    private var currentSong: Song?
+    
+    /// 스크롤링 애니메이션 관련 프로퍼티
+    private var titleScrollTimer: Timer?
+    private var isScrollingTitle = false
+    
+    /// 현재 재생 상태를 나타내는 변수
+    private var isPlaying: Bool = false
+    
+    /// 재생 상태 업데이트 타이머
+    private var progressTimer: Timer?
+    
+    // MARK: - UI 컴포넌트
+    /// 미니플레이어 컨테이너 뷰
     private let containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .gray
@@ -32,6 +56,7 @@ class MiniPlayerViewController: UIViewController {
         return view
     }()
     
+    /// 앨범 커버 이미지
     private let albumImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
@@ -41,7 +66,7 @@ class MiniPlayerViewController: UIViewController {
         return imageView
     }()
     
-    // 제목을 위한 스크롤 가능한 컨테이너
+    /// 제목을 위한 스크롤 가능한 컨테이너
     private let titleScrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.showsHorizontalScrollIndicator = false
@@ -51,6 +76,7 @@ class MiniPlayerViewController: UIViewController {
         return scrollView
     }()
     
+    /// 곡 제목 라벨
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 16, weight: .medium)
@@ -60,6 +86,7 @@ class MiniPlayerViewController: UIViewController {
         return label
     }()
     
+    /// 아티스트 라벨
     private let artistLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 14, weight: .regular)
@@ -68,6 +95,7 @@ class MiniPlayerViewController: UIViewController {
         return label
     }()
     
+    /// 이전 곡 버튼
     private let previousButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "backward.fill"), for: .normal)
@@ -77,6 +105,7 @@ class MiniPlayerViewController: UIViewController {
         return button
     }()
     
+    /// 재생/일시정지 버튼
     private let playPauseButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "play.fill"), for: .normal)
@@ -86,6 +115,7 @@ class MiniPlayerViewController: UIViewController {
         return button
     }()
     
+    /// 다음 곡 버튼
     private let nextButton: UIButton = {
         let button = UIButton(type: .system)
         button.setImage(UIImage(systemName: "forward.fill"), for: .normal)
@@ -95,7 +125,7 @@ class MiniPlayerViewController: UIViewController {
         return button
     }()
     
-    // 재생 진행 바
+    /// 재생 진행 바
     private let progressView: UIProgressView = {
         let progress = UIProgressView(progressViewStyle: .default)
         progress.progressTintColor = .black
@@ -103,18 +133,9 @@ class MiniPlayerViewController: UIViewController {
         progress.translatesAutoresizingMaskIntoConstraints = false
         return progress
     }()
+
+    // MARK: - 라이프사이클 메소드
     
-    // MARK: - 프로퍼티
-    weak var delegate: MiniPlayerDelegate?
-    private var isPlaying: Bool = false
-    private var currentSong: Song?
-    private var progressTimer: Timer?
-    
-    // 텍스트 스크롤링 애니메이션 관련
-    private var titleScrollTimer: Timer?
-    private var isScrollingTitle = false
-    
-    // 호출
     override func viewDidLoad() {
         super.viewDidLoad()
         setupUI()
@@ -124,7 +145,10 @@ class MiniPlayerViewController: UIViewController {
         view.isUserInteractionEnabled = true
     }
     
-    // MARK: - UI 설정
+
+    // MARK: - 초기 설정 메소드
+    
+    /// UI 컴포넌트 설정
     private func setupUI() {
         // 배경을 투명하게 설정
         view.backgroundColor = .clear
@@ -217,7 +241,8 @@ class MiniPlayerViewController: UIViewController {
         nextButton.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)
     }
     
-    // MARK: - 제스처 설정
+    // MARK: - 제스처 관련 메소드
+    /// 제스처 설정
     private func setupGestures() {
         // 전체 탭 제스처
         let tapGesture = UITapGestureRecognizer(target: self, action: #selector(miniPlayerTapped))
@@ -238,16 +263,20 @@ class MiniPlayerViewController: UIViewController {
         containerView.addGestureRecognizer(upSwipe)
     }
     
-    // MARK: - 동작 처리
+    // MARK: - 액션 메소드
+    
+    /// 미니플레이어 탭 처리
     @objc private func miniPlayerTapped() {
         delegate?.miniPlayerDidTap()
     }
     
+    /// 이전 곡 버튼 액션
     @objc private func previousButtonTapped() {
         print("Previous button tapped")  // 디버깅용 로그
         delegate?.miniPlayerPreviousDidTap()
     }
     
+    /// 재생/일시정지 버튼 액션
     @objc private func playPauseButtonTapped() {
         print("Play/Pause button tapped")  // 디버깅용 로그
         isPlaying.toggle()
@@ -256,11 +285,13 @@ class MiniPlayerViewController: UIViewController {
         delegate?.miniPlayerPlayPauseDidTap()
     }
     
+    /// 다음 곡 버튼 액션
     @objc private func nextButtonTapped() {
         print("Next button tapped")  // 디버깅용 로그
         delegate?.miniPlayerNextDidTap()
     }
     
+    /// 좌우 스와이프 제스처 처리
     @objc private func handleSwipe(_ gesture: UISwipeGestureRecognizer) {
         if gesture.direction == .left {
             print("Left swipe detected")  // 디버깅용 로그
@@ -271,12 +302,15 @@ class MiniPlayerViewController: UIViewController {
         }
     }
     
+    /// 위로 스와이프 제스처 처리
     @objc private func handleUpSwipe() {
         // 위로 스와이프하면 풀스크린으로 전환 (탭과 동일한 동작)
         delegate?.miniPlayerDidTap()
     }
     
-    // MARK: - 공개 메서드
+    // MARK: - 공개 메소드
+    
+    /// 재생 상태 업데이트
     func updatePlaybackState(isPlaying: Bool) {
         self.isPlaying = isPlaying
         let imageName = isPlaying ? "pause.fill" : "play.fill"
@@ -290,6 +324,7 @@ class MiniPlayerViewController: UIViewController {
         }
     }
     
+    /// 현재 재생 중인 곡 정보 업데이트
     func updateNowPlaying(song: Song, image: UIImage?) {
         self.currentSong = song
         titleLabel.text = song.title
@@ -308,7 +343,9 @@ class MiniPlayerViewController: UIViewController {
         }
     }
     
-    // MARK: - 배경색 업데이트
+    // MARK: - 배경색 관련 메소드
+    
+    /// 배경색 업데이트
     private func updateBackgroundColor(from image: UIImage?) {
         guard let image = image else {
             // 이미지가 없으면 기본 색상으로 설정
@@ -327,12 +364,14 @@ class MiniPlayerViewController: UIViewController {
         }
     }
     
+    /// 배경색 애니메이션 적용
     private func animateBackgroundColor(to color: UIColor) {
         UIView.animate(withDuration: 0.5, delay: 0, options: [.curveEaseInOut], animations: {
             self.containerView.backgroundColor = color
         })
     }
     
+    /// 미니플레이어 표시
     func show(animated: Bool = true) {
         guard animated else {
             view.alpha = 1.0
@@ -360,6 +399,7 @@ class MiniPlayerViewController: UIViewController {
         }
     }
     
+    /// 미니플레이어 숨기기
     func hide(animated: Bool = true) {
         stopProgressTimer()
         stopTitleScrolling()  // 미니플레이어가 숨겨질 때 스크롤링 정지
@@ -374,17 +414,21 @@ class MiniPlayerViewController: UIViewController {
         }
     }
     
-    // MARK: - 진행 바 타이머 관리
+    // MARK: - 진행 바 관련 메소드
+    
+    /// 진행 바 타이머 시작
     private func startProgressTimer() {
         stopProgressTimer()
         progressTimer = Timer.scheduledTimer(timeInterval: 0.1, target: self, selector: #selector(updateProgress), userInfo: nil, repeats: true)
     }
     
+    /// 진행 바 타이머 정지
     private func stopProgressTimer() {
         progressTimer?.invalidate()
         progressTimer = nil
     }
     
+    /// 진행 바 업데이트
     @objc private func updateProgress() {
         let currentTime = AudioManager.shared.playerCurrentTime
         let duration = AudioManager.shared.playerDuration
@@ -395,7 +439,9 @@ class MiniPlayerViewController: UIViewController {
         progressView.setProgress(progress, animated: true)
     }
     
-    // MARK: - 텍스트 스크롤링 애니메이션
+    // MARK: - 텍스트 스크롤링 관련 메소드
+    
+    /// 필요한 경우 제목 스크롤링 시작
     private func startTitleScrollingIfNeeded() {
         // 기존 애니메이션 정지
         stopTitleScrolling()
