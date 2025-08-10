@@ -1,123 +1,16 @@
 //
-//  MainTabBarController.swift
+//  MainTabBar+MiniPlayerDelegate.swift
 //  BGMate
 //
-//  Created by Yesung Yoon on 8/3/25.
+//  Created by Yesung Yoon on 8/5/25.
 //
 
 import UIKit
 
-class MainTabBarController: UITabBarController {
-    
-    // MARK: - 프로퍼티
-    
-    /// 미니플레이어 뷰 컨트롤러
-    let miniPlayerVC = MiniPlayerViewController()
-    
-    /// 현재 재생 중인 플레이리스트
-    private var currentPlaylist: Playlist?
-    /// 현재 재생 중인 곡 인덱스
-    private var currentSongIndex: Int = 0
-    
-    // MARK: - 재생 모드 관련 프로퍼티
-    
-    /// 셔플 모드 활성화 상태
-    private var isShuffleOn: Bool = false
-    /// 반복 모드 활성화 상태
-    private var isRepeatOn: Bool = false
-    /// 셔플된 재생 순서 배열
-    private var shuffledIndices: [Int] = []
-    /// 재생 히스토리 배열
-    private var playHistory: [Int] = []
-    /// 원본 셔플 순서 배열
-    private var originalShuffledIndices: [Int] = []
-    
-    // MARK: - 라이프사이클 메소드
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        // 탭바 설정
-        setupTabBar()
-        
-        // 미니플레이어 설정
-        setupMiniPlayer()
-        
-        // 처음에는 미니플레이어 숨김
-        miniPlayerVC.hide(animated: false)
-    }
-    
-    // MARK: - 초기 설정 메소드
-    
-    /// 탭바 설정
-    private func setupTabBar() {
-        let homeVC = UINavigationController(rootViewController: HomeViewController())
-        homeVC.tabBarItem = UITabBarItem(title: "BGMate", image: UIImage(systemName: "house"), tag: 0)
-        
-        let searchVC = UINavigationController(rootViewController: SearchViewController())
-        searchVC.tabBarItem = UITabBarItem(title: "LIBRARY", image: UIImage(systemName: "square.stack"), tag: 1)
-        
-        self.viewControllers = [homeVC, searchVC]
-    }
-    
-    /// 미니플레이어 설정
-    private func setupMiniPlayer() {
-        // 미니플레이어 뷰 추가 (child로 추가하지 않음)
-        view.addSubview(miniPlayerVC.view)
-        
-        // 미니플레이어 델리게이트 설정
-        miniPlayerVC.delegate = self
-        
-        // 오토레이아웃 제약 (항상 탭바 위에!)
-        miniPlayerVC.view.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            miniPlayerVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            miniPlayerVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            miniPlayerVC.view.bottomAnchor.constraint(equalTo: tabBar.topAnchor),
-            miniPlayerVC.view.heightAnchor.constraint(equalToConstant: 65)
-        ])
-    }
-    
-    // MARK: - 공개 메소드
-    
-    /// 미니플레이어 뷰컨트롤러 반환
-    func getMiniPlayerVC() -> MiniPlayerViewController {
-        return miniPlayerVC
-    }
-    
-    /// 현재 재생 정보 저장
-    func setCurrentPlayingInfo(playlist: Playlist, index: Int) {
-        currentPlaylist = playlist
-        currentSongIndex = index
-    }
-    
-    /// 현재 재생 정보 반환
-    func getCurrentPlayingInfo() -> (playlist: Playlist?, index: Int) {
-        return (currentPlaylist, currentSongIndex)
-    }
-    
-    // MARK: - 재생 모드 관련 메소드
-    
-    /// 재생 모드 상태 동기화 (PlayerViewController에서 호출)
-    func syncPlaybackState(isShuffleOn: Bool, isRepeatOn: Bool, shuffledIndices: [Int], playHistory: [Int], originalShuffledIndices: [Int]) {
-        self.isShuffleOn = isShuffleOn
-        self.isRepeatOn = isRepeatOn
-        self.shuffledIndices = shuffledIndices
-        self.playHistory = playHistory
-        self.originalShuffledIndices = originalShuffledIndices
-        
-        print("재생 상태 동기화: 셔플=\(isShuffleOn), 반복=\(isRepeatOn)")
-    }
-    
-    /// 현재 재생 모드 상태 반환
-    func getCurrentPlaybackState() -> (isShuffleOn: Bool, isRepeatOn: Bool, shuffledIndices: [Int], playHistory: [Int], originalShuffledIndices: [Int]) {
-        return (isShuffleOn, isRepeatOn, shuffledIndices, playHistory, originalShuffledIndices)
-    }
-}
-
 // MARK: - MiniPlayerDelegate 구현
 extension MainTabBarController: MiniPlayerDelegate {
-    /// 미니플레이어 탭 처리 - 풀스크린 플레이어로 전환
+    
+    // MARK: - 델리게이트: 탭으로 풀스크린 전환
     func miniPlayerDidTap() {
         // 현재 재생 중인 곡이 있는지 확인하고 PlayerViewController 표시
         let playerVC = PlayerViewController()
@@ -142,7 +35,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         selectedViewController?.present(playerVC, animated: true)
     }
     
-    /// 재생/일시정지 버튼 탭 처리
+    // MARK: - 델리게이트: 재생/일시정지
     func miniPlayerPlayPauseDidTap() {
         // AudioManager를 통해 재생/일시정지
         if AudioManager.shared.isPlaying {
@@ -153,7 +46,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         miniPlayerVC.updatePlaybackState(isPlaying: AudioManager.shared.isPlaying)
     }
     
-    /// 다음 곡 버튼 탭 처리
+    // MARK: - 델리게이트: 다음 곡
     func miniPlayerNextDidTap() {
         // 다음 곡으로 이동 (셔플/반복 고려)
         if let nextIndex = getNextIndex() {
@@ -165,7 +58,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         }
     }
     
-    /// 이전 곡 버튼 탭 처리
+    // MARK: - 델리게이트: 이전 곡
     func miniPlayerPreviousDidTap() {
         // 이전 곡으로 이동 (셔플/반복 고려)
         let currentTime = AudioManager.shared.playerCurrentTime
@@ -189,9 +82,9 @@ extension MainTabBarController: MiniPlayerDelegate {
         }
     }
     
-    // MARK: - 재생 관련 메소드
+    // MARK: - Private Helper Methods
     
-    /// 현재 선택된 곡 재생
+    // MARK: - 내부: 현재 곡 재생
     private func playCurrentSong() {
         guard let playlist = currentPlaylist,
               currentSongIndex >= 0,
@@ -203,8 +96,19 @@ extension MainTabBarController: MiniPlayerDelegate {
         }
         
         let currentSong = playlist.playlist[currentSongIndex]
-        AudioManager.shared.prepareAudio(named: currentSong.fileName, fileExtension: "mp3")
-        AudioManager.shared.play()
+        do {
+            try AudioManager.shared.prepareAudioThrowing(named: currentSong.fileName, fileExtension: "mp3")
+            AudioManager.shared.play()
+        } catch {
+            let alert = UIAlertController(
+                title: "재생할 수 없습니다",
+                message: "오디오 파일을 불러오지 못했습니다.\n\(error)",
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: "확인", style: .default))
+            selectedViewController?.present(alert, animated: true)
+            return
+        }
         
         // 플레이리스트 커버 이미지 가져오기
         var playlistImage: UIImage?
@@ -219,7 +123,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         print("미니플레이어에서 곡 변경: \(currentSong.title)")
     }
     
-    // MARK: - 셔플/반복 로직 (PlayerViewController와 동일)
+    // MARK: - 내부: 다음 인덱스 계산
     private func getNextIndex() -> Int? {
         guard let playlist = currentPlaylist else { return nil }
         
@@ -248,6 +152,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         return nil  // 더 이상 재생할 곡이 없음
     }
     
+    // MARK: - 내부: 이전 인덱스 계산
     private func getPrevIndex() -> Int? {
         if isShuffleOn {
             // 셔플 모드일 때는 히스토리 기반으로 이전 곡 결정
@@ -264,6 +169,7 @@ extension MainTabBarController: MiniPlayerDelegate {
         return nil
     }
     
+    // MARK: - 내부: 셔플 인덱스 생성
     private func createShuffledIndices() {
         guard let playlist = currentPlaylist else { return }
         
