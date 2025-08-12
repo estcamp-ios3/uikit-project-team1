@@ -1,5 +1,5 @@
 //
-//  playlistNotification.swift
+//  PlaylistNotification.swift
 //  BGMate
 //
 //  Created by catharina J on 7/31/25.
